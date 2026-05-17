@@ -263,8 +263,13 @@
 "plugin.help.APSSupport.example.1" = "If Messages keeps spinning or Walkie-Talkie does not refresh even though the watch is paired and nearby, this fix is patching that connected-state path.";
 "plugin.help.APSSupport.example.2" = "It is mainly repairing state reporting. It does not reconfigure your Apple ID, push token, or network profile by itself.";
 
+"plugin.help.MessagesSupport.tagline" = "Restores the Messages system-app mapping used during app delivery.";
+"plugin.help.MessagesSupport.summary" = "This fix only patches appconduitd so the watch-side Messages bundle stays visible as an installable system app. It is the narrow Messages-specific half that was previously bundled into Apps Support.";
+"plugin.help.MessagesSupport.example.1" = "Use this when Messages disappears from the watch app list or gets treated like an unmapped system app during delivery.";
+"plugin.help.MessagesSupport.example.2" = "It does not change watchOS app version checks by itself.";
+
 "plugin.help.AppsSupport.tagline" = "Relaxes watch app installation checks so more apps can still be delivered to newer watches.";
-"plugin.help.AppsSupport.summary" = "This fix adds missing system-app mappings inside appconduitd and makes the watch-bundle validator treat the target watchOS as a higher compatible version. That helps older iPhones pass install-time checks that would otherwise reject a watch app as too new.";
+"plugin.help.AppsSupport.summary" = "This fix only adjusts the watch-bundle validator so the target watchOS is treated as a higher compatible version. That helps older iPhones pass install-time checks that would otherwise reject a watch app as too new.";
 "plugin.help.AppsSupport.example.1" = "A common symptom is seeing the watch app on iPhone, but the install button stays disabled or the system says the app is not applicable to the current watchOS.";
 "plugin.help.AppsSupport.example.2" = "It does not create apps that were never shipped. It mainly helps already available apps clear version gating.";
 
@@ -277,6 +282,11 @@
 "plugin.help.LockdownModeSupport.summary" = "When identityservicesd loads its service dictionary, this fix injects the Lockdown Mode entry that newer watches expect. It closes the gap where the watch knows about the feature, but the host service registry never advertises it.";
 "plugin.help.LockdownModeSupport.example.1" = "On a newer watch paired to an older iPhone, Lockdown Mode-related options may be missing entirely until this service definition is restored.";
 "plugin.help.LockdownModeSupport.example.2" = "This mainly repairs service registration. It does not bypass every system restriction around Lockdown Mode.";
+
+"plugin.help.WatchUpdateBlock.tagline" = "Suppresses the Watch app's watchOS update scan so the current version stays hidden.";
+"plugin.help.WatchUpdateBlock.summary" = "This fix intercepts the Bridge-side software update scan path and the lower-level update client callbacks, then forces the result to look like no watchOS update is available. It is aimed at hiding the upgrade prompt inside the Watch app.";
+"plugin.help.WatchUpdateBlock.example.1" = "Use this if the Watch app keeps advertising an update you do not want to surface on iPhone.";
+"plugin.help.WatchUpdateBlock.example.2" = "It suppresses the scan and result reporting; it does not change the watch itself.";
 
 "plugin.help.MediaSyncSupport.tagline" = "Repairs offline music and playlist syncing by rebuilding the keep-local request path.";
 "plugin.help.MediaSyncSupport.summary" = "Inside Bridge and NanoMusicSync, this fix recreates a compatible Keep Local flow. When the stock host does not deliver albums or playlists to the watch correctly, the plugin falls back to IDS messaging and protobuf payloads to drive the sync anyway.";
@@ -338,6 +348,7 @@
 "plugin.tech.executable.nanomapscd" = "nanomapscd (watch Maps service)";
 "plugin.tech.executable.nanoregistryd" = "nanoregistryd (pairing registry daemon)";
 "plugin.tech.executable.nanoregistrylaunchd" = "nanoregistrylaunchd (NanoRegistry launch helper)";
+"plugin.tech.executable.softwareupdateservicesd" = "softwareupdateservicesd (software update service)";
 "plugin.tech.executable.nanotimekitcompaniond" = "nanotimekitcompaniond (watch-face sync daemon)";
 "plugin.tech.executable.nptocompaniond" = "nptocompaniond (photo sync daemon)";
 "plugin.tech.executable.pairedsyncd" = "pairedsyncd (paired-device sync daemon)";

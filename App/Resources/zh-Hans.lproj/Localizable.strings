@@ -263,8 +263,13 @@
 "plugin.help.APSSupport.example.1" = "如果 Apple Watch 明明已经连着手机，但“信息”一直转圈、对讲机列表不刷新，这个修复补的就是那段连通状态上报。";
 "plugin.help.APSSupport.example.2" = "它主要是在修状态判断，不会直接替你重配 Apple ID、推送令牌或网络设置。";
 
+"plugin.help.MessagesSupport.tagline" = "恢复 Messages 送装时使用的系统 App 映射。";
+"plugin.help.MessagesSupport.summary" = "这个修复只补 appconduitd 里 Messages 对应的系统 App 映射，把手表端的“信息”作为可安装系统 App 重新识别出来。它是之前混在 Apps Support 里的那一小块。";
+"plugin.help.MessagesSupport.example.1" = "当“信息”在手表 App 列表里消失，或在下发时被当成未映射的系统 App 时，用这个修复。";
+"plugin.help.MessagesSupport.example.2" = "它本身不会修改 watchOS 的版本校验。";
+
 "plugin.help.AppsSupport.tagline" = "放宽手表 App 安装校验，让更多 App 还能继续下发到较新的手表。";
-"plugin.help.AppsSupport.summary" = "它一边给 appconduitd 补上缺失的系统 App 映射，一边让 Watch bundle 的版本校验把目标 watchOS 视为更高兼容版本，从而绕过“手表系统太新，当前 App 不适用”的限制。";
+"plugin.help.AppsSupport.summary" = "这个修复只调整 Watch bundle 的版本校验，让目标 watchOS 被当成更高兼容版本，从而绕过“手表系统太新，当前 App 不适用”的限制。";
 "plugin.help.AppsSupport.example.1" = "常见现象是 iPhone 端能看到手表 App，但安装按钮灰掉，或者系统直接说当前 watchOS 不支持安装。";
 "plugin.help.AppsSupport.example.2" = "它不会凭空生成不存在的 App，只是让本来就能装的包更容易通过版本门槛。";
 
@@ -277,6 +282,11 @@
 "plugin.help.LockdownModeSupport.summary" = "当 identityservicesd 载入服务字典时，这个修复会把 Lockdown Mode 那条定义补进去。它修的是“手表知道有这个功能，但手机侧服务表里根本没登记”的兼容缺口。";
 "plugin.help.LockdownModeSupport.example.1" = "较新的手表配到较旧 iPhone 上时，锁定模式联动项可能完全不显示。";
 "plugin.help.LockdownModeSupport.example.2" = "它主要补的是服务注册，不代表能绕过所有与锁定模式有关的系统限制。";
+
+"plugin.help.WatchUpdateBlock.tagline" = "屏蔽 Watch App 里的手表系统更新扫描，让当前版本不再被提示升级。";
+"plugin.help.WatchUpdateBlock.summary" = "这个修复会拦截 Bridge 侧的软件更新扫描链路和底层更新客户端回调，强制把结果伪装成“没有可用更新”。它就是用来隐藏 Watch 应用里的升级提示。";
+"plugin.help.WatchUpdateBlock.example.1" = "如果 Watch App 总是在 iPhone 上提示你更新手表系统，而你不想让它显示，这个修复就对准这个路径。";
+"plugin.help.WatchUpdateBlock.example.2" = "它只会压住扫描和结果回报，不会真的改动手表本身。";
 
 "plugin.help.MediaSyncSupport.tagline" = "修复离线音乐与播放列表同步依赖的 Keep Local 请求链路。";
 "plugin.help.MediaSyncSupport.summary" = "这个插件会在 Bridge 和 NanoMusicSync 里重建兼容的 Keep Local 同步流程。原本系统如果不能把专辑或播放列表正确下发到手表，它会改用 IDS 消息和 protobuf 负载来推动同步。";
@@ -338,6 +348,7 @@
 "plugin.tech.executable.nanomapscd" = "nanomapscd（手表地图服务）";
 "plugin.tech.executable.nanoregistryd" = "nanoregistryd（配对注册表守护进程）";
 "plugin.tech.executable.nanoregistrylaunchd" = "nanoregistrylaunchd（NanoRegistry 启动代理）";
+"plugin.tech.executable.softwareupdateservicesd" = "softwareupdateservicesd（系统更新服务）";
 "plugin.tech.executable.nanotimekitcompaniond" = "nanotimekitcompaniond（表盘同步服务）";
 "plugin.tech.executable.nptocompaniond" = "nptocompaniond（照片同步服务）";
 "plugin.tech.executable.pairedsyncd" = "pairedsyncd（配对同步服务）";

@@ -7,34 +7,6 @@
 - (BOOL)isApplicableToOSVersion:(id)version error:(id *)error;
 @end
 
-%group MessageFixes
-
-%hook ApplicationManager
-
-- (NSDictionary *)_supplementalSystemAppBundleIDMappingForWatchOSSixAndLater {
-    Log(@"Original _supplementalSystemAppBundleIDMappingForWatchOSSixAndLater called");
-    NSDictionary *result = %orig;
-    NSMutableDictionary *mapping = [result mutableCopy] ?: [NSMutableDictionary dictionary];
-    NSString *sms = @"com.apple.MobileSMS";
-    [mapping setObject:sms forKey:sms];
-    Log(@"Add Success");
-    return mapping;
-}
-
-// - (NSArray *)_bundleIDsOfLocallyAvailableSystemApps {
-//     Log(@"Original _bundleIDsOfLocallyAvailableSystemApps called");
-//     NSArray *result = %orig;
-//     Log(@"Original bundle IDs count: %lu", (unsigned long)[result count]);
-//     for (NSString *bundleID in result) {
-//         Log(@"  %@", bundleID);
-//     }
-//     return result;
-// }
-
-%end
-
-%end
-
 %group AppsSupport
 
 %hook WatchBundle
@@ -51,18 +23,7 @@
 
 %end
 
-void InstallAppConduitHook(void) {
-    Class managerClass = objc_lookUpClass("ACXAvailableApplicationManager");
-    if (!managerClass) {
-        Log(@"ACXAvailableApplicationManager class not found, skipping app conduit hook");
-        return;
-    }
-    %init(MessageFixes, ApplicationManager=managerClass);
-
-    Log(@"Installed app conduit hook");
-}
-
-void InstallAppsSupportHooks(void) {
+static void InstallAppsSupportHooks(void) {
     Class watchBundleClass = objc_lookUpClass("MIEmbeddedWatchBundle");
     if (!watchBundleClass) {
         Log(@"MIEmbeddedWatchBundle class not found, skipping AppsSupport hooks");
@@ -79,13 +40,7 @@ void InstallAppsSupportHooks(void) {
     if (!progname) {
         return;
     }
-    // NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
-    // Log(@"Bundle ID   : %@", bundleID);
-    // Log(@"Program Name: %@", StringFromCString(progname));
-    if (is_equal(progname, "appconduitd")) {
-        Log(@"Initializing AppsSupport...");
-        InstallAppConduitHook();
-    } else if (is_equal(progname, "installd") ||
+    if (is_equal(progname, "installd") ||
         is_equal(progname, "MobileInstallationHelperService") ||
         is_equal(progname, "com.apple.MobileInstallationHelperService")) {
         Log(@"Initializing AppsSupport...");

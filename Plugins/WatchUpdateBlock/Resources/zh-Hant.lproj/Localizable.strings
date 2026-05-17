@@ -1,0 +1,2 @@
+"plugin.WatchUpdateBlock.title" = "WatchOS 更新屏蔽";
+"plugin.WatchUpdateBlock.detail" = "鎖定目前 watchOS 版本，並隱藏 Watch 應用程式內的升級提示。";

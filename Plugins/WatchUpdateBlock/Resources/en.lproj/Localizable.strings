@@ -1,0 +1,2 @@
+"plugin.WatchUpdateBlock.title" = "WatchOS Update Block";
+"plugin.WatchUpdateBlock.detail" = "Locks the current watchOS version and hides update prompts in the Watch app.";
