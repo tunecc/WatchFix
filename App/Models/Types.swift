@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 func L(_ key: String) -> String {
-    NSLocalizedString(key, comment: "")
+    WFLocalizedAppString(key, key)
 }
 
 func LF(_ key: String, _ arguments: CVarArg...) -> String {
@@ -83,6 +83,11 @@ struct OSRestriction: Hashable {
     let minimumWatchOSVersion: Int
 }
 
+struct PluginInjectionTargets: Hashable {
+    let bundles: [String]
+    let executables: [String]
+}
+
 struct PluginMetadata: Hashable {
     let identifier: String
     let title: String
@@ -97,6 +102,8 @@ struct PluginMetadata: Hashable {
     let osRestrictions: [OSRestriction]
     let nanoCapabilities: [String]
     let nanoCapabilitiesAnyPredicate: Bool
+    let injectionTargets: PluginInjectionTargets
+    let restartExecutables: [String]
     let isTool: Bool
     let hasInstallableContent: Bool
     let hasConfigurationInterface: Bool
@@ -128,6 +135,7 @@ struct PluginState: Identifiable {
     var title: String { metadata.title }
     var detail: String { metadata.detail }
     var isTool: Bool { metadata.isTool }
+    var helpContent: PluginHelpContent? { PluginHelpCatalog.content(for: metadata) }
     var validationMessage: String? { validation.message }
     var updateMessage: String? {
         guard needsUpdate else {
@@ -342,14 +350,14 @@ struct Alert: Identifiable {
 }
 
 enum Catalog {
-    private static let bundledPlugins: [PluginMetadata] = loadBundledPlugins()
-
     static func requiredCapabilityIdentifiers() -> [String] {
-        Array(Set(bundledPlugins.flatMap(\.nanoCapabilities))).sorted()
+        let bundledPlugins = loadBundledPlugins()
+        return Array(Set(bundledPlugins.flatMap(\.nanoCapabilities))).sorted()
     }
 
     static func metadata(for identifier: String) -> PluginMetadata {
-        bundledPlugins.first(where: { $0.identifier == identifier }) ?? PluginMetadata(
+        let bundledPlugins = loadBundledPlugins()
+        return bundledPlugins.first(where: { $0.identifier == identifier }) ?? PluginMetadata(
             identifier: identifier,
             title: identifier,
             detail: identifier,
@@ -363,6 +371,8 @@ enum Catalog {
             osRestrictions: [],
             nanoCapabilities: [],
             nanoCapabilitiesAnyPredicate: false,
+            injectionTargets: PluginInjectionTargets(bundles: [], executables: []),
+            restartExecutables: [],
             isTool: false,
             hasInstallableContent: true,
             hasConfigurationInterface: false
@@ -374,6 +384,7 @@ enum Catalog {
         validationSnapshot: [String: Any],
         installedVersions: [String: [String: String]]
     ) -> [PluginState] {
+        let bundledPlugins = loadBundledPlugins()
         let known = Dictionary(uniqueKeysWithValues: bundledPlugins.map { ($0.identifier, $0) })
         let identifiers = Set(states.keys).union(bundledPlugins.map(\.identifier))
         return identifiers
@@ -429,8 +440,10 @@ enum Catalog {
         let titleKey = manifest["WFPluginTitle"] as? String ?? identifier
         let detailKey = manifest["WFPluginDetail"] as? String ?? identifier
         let title = localizedPluginValue(bundleURL: bundleURL, key: titleKey)
-        let detail = localizedPluginValue(bundleURL: bundleURL, key: detailKey)
+        let bundledDetail = localizedPluginValue(bundleURL: bundleURL, key: detailKey)
+        let detail = PluginHelpCatalog.tagline(for: identifier) ?? bundledDetail
         let scopeIdentifier = manifest["WFPluginScopeIdentifier"] as? String ?? identifier
+        let injectionTargets = (manifest["WFPluginInjectionTargets"] as? [String: Any]) ?? [:]
 
         return PluginMetadata(
             identifier: identifier,
@@ -453,6 +466,11 @@ enum Catalog {
             },
             nanoCapabilities: (manifest["WFPluginNanoCapabilities"] as? [String] ?? []).map { $0.uppercased() },
             nanoCapabilitiesAnyPredicate: (manifest["WFPluginNanoCapabilitiesAnyPredicate"] as? NSNumber)?.boolValue ?? false,
+            injectionTargets: PluginInjectionTargets(
+                bundles: normalizeStringArray(injectionTargets["Bundles"]),
+                executables: normalizeStringArray(injectionTargets["Executables"])
+            ),
+            restartExecutables: normalizeStringArray(manifest["WFPluginRestartExecutables"]),
             isTool: (manifest["WFPluginPresentAsTool"] as? NSNumber)?.boolValue ?? false,
             hasInstallableContent: (manifest["WFPluginHasInstallableContent"] as? NSNumber)?.boolValue ?? true,
             hasConfigurationInterface: WFPluginBridge.pluginHasConfigurationInterface(named: identifier)
@@ -461,19 +479,9 @@ enum Catalog {
 
     private static func localizedPluginValue(bundleURL: URL, key: String) -> String {
         if let bundle = Bundle(url: bundleURL) {
-            let localized = bundle.localizedString(forKey: key, value: nil, table: nil)
+            let localized = AppLocalization.localizedString(in: bundle, key: key, fallback: key)
             if localized != key {
                 return localized
-            }
-
-            if
-                let englishPath = bundle.path(forResource: "en", ofType: "lproj"),
-                let englishBundle = Bundle(path: englishPath)
-            {
-                let englishLocalized = englishBundle.localizedString(forKey: key, value: nil, table: nil)
-                if englishLocalized != key {
-                    return englishLocalized
-                }
             }
         }
 
@@ -625,5 +633,20 @@ enum Catalog {
             return buildValue
         }
         return "\(shortValue) (\(buildValue))"
+    }
+
+    private static func normalizeStringArray(_ value: Any?) -> [String] {
+        let strings = value as? [String] ?? []
+        var seen = Set<String>()
+        return strings.compactMap { rawValue in
+            let trimmed = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else {
+                return nil
+            }
+            guard seen.insert(trimmed).inserted else {
+                return nil
+            }
+            return trimmed
+        }
     }
 }

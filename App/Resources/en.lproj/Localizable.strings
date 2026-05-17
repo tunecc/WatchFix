@@ -102,6 +102,7 @@
 "features.plugins.empty" = "No known fixes are currently installed.";
 "features.plugins.unavailable" = "This fix is not currently installed.";
 "features.plugins.configure" = "Settings";
+"features.plugins.details" = "Details";
 "features.plugins.validation.system" = "Requires iOS %1$@ or later.";
 "features.plugins.validation.system.maximum" = "This plugin does not support iOS %1$@ and above.";
 "features.plugins.validation.watch" = "Requires watchOS %1$@ or later.";
@@ -235,3 +236,113 @@
 "alert.settingsSaved.message" = "Plugin settings have been saved.";
 "alert.watchRebooted.message" = "A restart request has been sent to the current active Apple Watch.";
 "alert.servicesRestarted.message" = "Services related to Apple Watch have been restarted.";
+
+"about.language.title" = "App Language";
+"about.language.button" = "Switch Language";
+
+"plugin.help.section.title" = "Detailed Notes";
+"plugin.help.section.footer" = "Open the notes for a friendlier explanation, then expand technical details to see injected bundles and processes.";
+"plugin.help.action.show" = "Show Detailed Notes";
+"plugin.help.action.hide" = "Hide Detailed Notes";
+"plugin.help.summary.title" = "What This Fix Does";
+"plugin.help.examples.title" = "Typical Situations";
+"plugin.help.requirements.title" = "System and Device Requirements";
+"plugin.help.targets.bundles" = "Injected Bundles";
+"plugin.help.targets.executables" = "Injected Processes";
+"plugin.help.technical.show" = "Show Technical Details";
+"plugin.help.technical.hide" = "Hide Technical Details";
+"plugin.help.empty" = "No additional notes are available for this plugin yet.";
+"plugin.help.requirement.ios.minimum" = "Requires iOS %@ or later.";
+"plugin.help.requirement.ios.maximum" = "Designed for iOS versions below %@.";
+"plugin.help.requirement.watch.minimum" = "Requires watchOS %@ or later.";
+"plugin.help.requirement.capability" = "The paired watch must expose the hardware capability required by this fix.";
+"plugin.help.requirement.osRestrictions" = "This fix applies only to specific iOS and watchOS version combinations.";
+
+"plugin.help.APSSupport.tagline" = "Improves the online-state handoff used by Messages, Walkie-Talkie, and related push services.";
+"plugin.help.APSSupport.summary" = "After apsd receives a presence event from the watch side, this fix explicitly reports the proxy as connected to the IDS proxy manager. It targets the case where the watch is already reachable, but the messaging stack still thinks the bridge is offline.";
+"plugin.help.APSSupport.example.1" = "If Messages keeps spinning or Walkie-Talkie does not refresh even though the watch is paired and nearby, this fix is patching that connected-state path.";
+"plugin.help.APSSupport.example.2" = "It is mainly repairing state reporting. It does not reconfigure your Apple ID, push token, or network profile by itself.";
+
+"plugin.help.AppsSupport.tagline" = "Relaxes watch app installation checks so more apps can still be delivered to newer watches.";
+"plugin.help.AppsSupport.summary" = "This fix adds missing system-app mappings inside appconduitd and makes the watch-bundle validator treat the target watchOS as a higher compatible version. That helps older iPhones pass install-time checks that would otherwise reject a watch app as too new.";
+"plugin.help.AppsSupport.example.1" = "A common symptom is seeing the watch app on iPhone, but the install button stays disabled or the system says the app is not applicable to the current watchOS.";
+"plugin.help.AppsSupport.example.2" = "It does not create apps that were never shipped. It mainly helps already available apps clear version gating.";
+
+"plugin.help.LayoutSupport.tagline" = "Repairs newer watchOS icon-layout syncing so home-screen arrangements can still be written back.";
+"plugin.help.LayoutSupport.summary" = "The code rewrites com.apple.Carousel IconPositions data into a 3-4-3 structure that older hosts can still validate, then forces the nano-domain sync path to push the layout back to the watch.";
+"plugin.help.LayoutSupport.example.1" = "If you reorder watch icons on iPhone and the watch layout snaps back, scrambles, or refuses to save, this is the fix most directly involved.";
+"plugin.help.LayoutSupport.example.2" = "This is a data-structure compatibility fix. It does not add a brand-new layout editor.";
+
+"plugin.help.LockdownModeSupport.tagline" = "Reintroduces the Lockdown Mode service definition on older iPhones so watch-side controls can surface again.";
+"plugin.help.LockdownModeSupport.summary" = "When identityservicesd loads its service dictionary, this fix injects the Lockdown Mode entry that newer watches expect. It closes the gap where the watch knows about the feature, but the host service registry never advertises it.";
+"plugin.help.LockdownModeSupport.example.1" = "On a newer watch paired to an older iPhone, Lockdown Mode-related options may be missing entirely until this service definition is restored.";
+"plugin.help.LockdownModeSupport.example.2" = "This mainly repairs service registration. It does not bypass every system restriction around Lockdown Mode.";
+
+"plugin.help.MediaSyncSupport.tagline" = "Repairs offline music and playlist syncing by rebuilding the keep-local request path.";
+"plugin.help.MediaSyncSupport.summary" = "Inside Bridge and NanoMusicSync, this fix recreates a compatible Keep Local flow. When the stock host does not deliver albums or playlists to the watch correctly, the plugin falls back to IDS messaging and protobuf payloads to drive the sync anyway.";
+"plugin.help.MediaSyncSupport.example.1" = "If you tap Download to Apple Watch and the request appears to start but no offline songs ever land on the watch, this fix is aimed at that pipeline.";
+"plugin.help.MediaSyncSupport.example.2" = "It is repairing the transport and compatibility layer. It does not replace Apple Music licensing or subscription checks.";
+
+"plugin.help.MobileDataSupport.tagline" = "Repairs cellular-capability detection so the Apple Watch mobile-data setup screens can reappear.";
+"plugin.help.MobileDataSupport.summary" = "This plugin intercepts CommCenter validation, inspects the paired watch product type, encoded watchOS version, and required cellular capability, then rewrites the provisioning result the host sees when the watch is actually cellular-capable.";
+"plugin.help.MobileDataSupport.example.1" = "If the watch is a cellular model but the iPhone never shows a Cellular page for it, this fix is targeting that mis-detection.";
+"plugin.help.MobileDataSupport.example.2" = "It helps when the system wrongly says the watch is unsupported. It does not activate a carrier plan for you.";
+
+"plugin.help.NanoMapsSupport.tagline" = "Repairs route-preview message structure so Maps directions can be sent to the watch again.";
+"plugin.help.NanoMapsSupport.summary" = "The plugin rewrites preview navigation payloads received by nanomapscd, splitting older unsupported waypoint lists into the start and end fields the host expects and forcing full GeoMapItem reads before delivery.";
+"plugin.help.NanoMapsSupport.example.1" = "A typical symptom is starting navigation on iPhone and seeing no usable preview or only partial route data on the watch.";
+"plugin.help.NanoMapsSupport.example.2" = "This is a message-compatibility fix. It does not change the underlying Apple Maps route itself.";
+
+"plugin.help.PairingCompatibility.tagline" = "Adds compatibility hooks for pairing, registry ranges, BLE, IDS, PassKit, and host-version spoofing.";
+"plugin.help.PairingCompatibility.summary" = "This is the core compatibility fix in WatchFix. It extends NanoRegistry pairing ranges, enables multiple framework and daemon hooks, and can spoof selected host-version fields so an older iPhone can still pair with and keep talking to a newer watch.";
+"plugin.help.PairingCompatibility.example.1" = "If pairing fails right after scanning the code, hangs during setup, or the watch drops off soon after pairing, this is usually the first fix to inspect.";
+"plugin.help.PairingCompatibility.example.2" = "Because it touches many services, installation or configuration changes often need service restarts before the result becomes stable.";
+
+"plugin.help.PhotoLibrarySupport.tagline" = "Repairs the message, snapshot, and resource-transfer path required for photo syncing.";
+"plugin.help.PhotoLibrarySupport.summary" = "Inside nptocompaniond, this plugin rebuilds the missing photo-sync workflow: it sends sync signals, answers snapshot requests, exports requested assets, and re-imports returned image resources on the iPhone side when necessary.";
+"plugin.help.PhotoLibrarySupport.example.1" = "If you pick a synced album on iPhone but the watch gallery never updates or a photo watch face stays blank, this fix is directly relevant.";
+"plugin.help.PhotoLibrarySupport.example.2" = "It repairs the transport and protobuf flow. It does not decide which photos Apple Photos should pick for you.";
+
+"plugin.help.PingMyWatchControlCenter.tagline" = "Adds a Ping Apple Watch Control Center module backed by a helper process.";
+"plugin.help.PingMyWatchControlCenter.summary" = "This plugin installs a Control Center module plus a helper executable. When tapped, it first verifies that the active watch supports the ping capability, then launches the helper that actually sends the ring request.";
+"plugin.help.PingMyWatchControlCenter.example.1" = "It is useful when the watch is nearby but misplaced and you want a faster shortcut than digging through Find My.";
+"plugin.help.PingMyWatchControlCenter.example.2" = "If the current watch does not support ping, the module reports that clearly instead of pretending the request worked.";
+
+"plugin.help.WatchAppSupport.tagline" = "Repairs watch model resources, size/material mapping, asset pulls, and pairing-related UI screens.";
+"plugin.help.WatchAppSupport.summary" = "These hooks patch both Bridge and SharingViewService: they restore product-type to size/material mapping, repair remote image and asset loading, and patch several pairing-flow screens such as update alerts and pairing-not-possible prompts.";
+"plugin.help.WatchAppSupport.example.1" = "Common symptoms are missing watch images, wrong size labels, broken progress layouts, or pairing screens that look incomplete on older hosts.";
+"plugin.help.WatchAppSupport.example.2" = "This is mostly a resource and UI-compatibility fix. It does not directly widen pairing ranges by itself.";
+
+"plugin.help.WatchFaceSupport.tagline" = "Lets the iPhone at least recognize and present placeholder data for newer watch faces.";
+"plugin.help.WatchFaceSupport.summary" = "The plugin injects a stub face bundle across Bridge, NTKFaceSnapshotService, and nanotimekitcompaniond. Newer faces that the host cannot decode are converted into placeholder objects that can still be enumerated, displayed, and preserved instead of being dropped outright.";
+"plugin.help.WatchFaceSupport.example.1" = "If the watch already uses a newer face but iPhone only shows a blank tile, an invalid face, or cannot enter the editor at all, this fix is highly relevant.";
+"plugin.help.WatchFaceSupport.example.2" = "It mainly provides compatibility display and a safe fallback. It does not mean every new watch-face feature becomes fully editable on the older iPhone.";
+
+"plugin.tech.bundle.com.apple.Bridge" = "Bridge (Watch app main bundle)";
+"plugin.tech.bundle.com.apple.InstalledContentLibrary" = "InstalledContentLibrary (watch app catalog)";
+"plugin.tech.bundle.com.apple.NTKFaceSnapshotService" = "NTKFaceSnapshotService (face snapshot service)";
+"plugin.tech.bundle.com.apple.NanoMusicSync" = "NanoMusicSync (watch music sync service)";
+"plugin.tech.bundle.com.apple.SharingViewService" = "SharingViewService (share sheet service)";
+"plugin.tech.bundle.com.apple.private.NanoRegistry" = "NanoRegistry (pairing registry service)";
+
+"plugin.tech.executable.apsd" = "apsd (Apple Push daemon)";
+"plugin.tech.executable.appconduitd" = "appconduitd (watch app delivery daemon)";
+"plugin.tech.executable.bluetoothd" = "bluetoothd (Bluetooth service)";
+"plugin.tech.executable.Bridge" = "Bridge (Watch app process on iPhone)";
+"plugin.tech.executable.com.apple.MobileInstallationHelperService" = "MobileInstallationHelperService (install helper service)";
+"plugin.tech.executable.companionproxyd" = "companionproxyd (companion proxy service)";
+"plugin.tech.executable.CommCenter" = "CommCenter (cellular and carrier service)";
+"plugin.tech.executable.identityservicesd" = "identityservicesd (identity and messaging service)";
+"plugin.tech.executable.imagent" = "imagent (instant-messaging agent)";
+"plugin.tech.executable.installd" = "installd (installation service)";
+"plugin.tech.executable.nanomapscd" = "nanomapscd (watch Maps service)";
+"plugin.tech.executable.nanoregistryd" = "nanoregistryd (pairing registry daemon)";
+"plugin.tech.executable.nanoregistrylaunchd" = "nanoregistrylaunchd (NanoRegistry launch helper)";
+"plugin.tech.executable.nanotimekitcompaniond" = "nanotimekitcompaniond (watch-face sync daemon)";
+"plugin.tech.executable.nptocompaniond" = "nptocompaniond (photo sync daemon)";
+"plugin.tech.executable.pairedsyncd" = "pairedsyncd (paired-device sync daemon)";
+"plugin.tech.executable.passd" = "passd (Wallet and passes service)";
+"plugin.tech.executable.Preferences" = "Preferences (Settings app)";
+"plugin.tech.executable.SpringBoard" = "SpringBoard (system shell)";
+"plugin.tech.executable.terminusd" = "terminusd (watch communication relay)";
+"plugin.tech.executable.wcd" = "wcd (WatchConnectivity service)";

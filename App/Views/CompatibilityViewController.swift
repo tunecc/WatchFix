@@ -17,6 +17,10 @@ final class CompatibilityViewController: WFScrollStackViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func localizedNavigationTitle() -> String? {
+        L("landing.compatibility.title")
+    }
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         inlineScannerView?.stopScanning()
@@ -129,7 +133,7 @@ final class CompatibilityViewController: WFScrollStackViewController {
                     WFMakeActionButton(
                         title: L("scanner.permission.button"),
                         systemImage: "camera.viewfinder"
-                    ) { [weak self] in
+                    ) {
                         if let url = URL(string: UIApplication.openSettingsURLString) {
                             UIApplication.shared.open(url)
                         }

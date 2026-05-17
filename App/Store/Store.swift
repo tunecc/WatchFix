@@ -31,6 +31,7 @@ struct WatchDebugInfo {
 @MainActor
 final class Store: ObservableObject {
     @Published private(set) var plugins: [PluginState] = Catalog.merge(states: [:], validationSnapshot: [:], installedVersions: [:])
+    @Published private(set) var appLanguage: AppLanguage = .current
     @Published var pairingSettings = PairingCompatibilitySettings()
     @Published private(set) var savedPairingSettings = PairingCompatibilitySettings()
     @Published private(set) var currentReport: WatchCompatibilityReport?
@@ -75,6 +76,16 @@ final class Store: ObservableObject {
         loadPluginLogs()
         refreshCurrentCompatibility()
         refreshDebugSnapshot()
+    }
+
+    func setAppLanguage(_ language: AppLanguage) {
+        guard appLanguage != language else {
+            return
+        }
+
+        language.persistSelection()
+        appLanguage = .current
+        refreshPluginCatalog()
     }
 
     func loadPluginStates() {

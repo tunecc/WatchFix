@@ -66,7 +66,7 @@ final class RootViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = L("landing.title")
+        applyLocalizedContent()
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "MenuCell")
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 84
@@ -80,6 +80,7 @@ final class RootViewController: UITableViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        applyLocalizedContent()
         tableView.reloadData()
     }
 
@@ -91,9 +92,14 @@ final class RootViewController: UITableViewController {
         store.objectWillChange
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
+                self?.applyLocalizedContent()
                 self?.tableView.reloadData()
             }
             .store(in: &cancellables)
+    }
+
+    private func applyLocalizedContent() {
+        title = L("landing.title")
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

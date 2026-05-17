@@ -25,8 +25,6 @@
     </array>
     <key>com.apple.private.coreservices.canmaplsdatabase</key>
     <true/>
-    <key>com.apple.private.security.container-required</key>
-    <true/>
     <key>com.apple.security.exception.files.absolute-path.read-only</key>
     <array>
         <string>/private/var/MobileAsset/AssetsV2/com_apple_MobileAsset_BridgeAssets/</string>
@@ -55,7 +53,9 @@
 		<string>reboot</string>
 	</array>
 
-    <key>com.apple.private.persona-mgmt</key>
+	<key>com.apple.private.persona-mgmt</key>
+	<true/>
+	<key>com.apple.private.security.storage.AppBundles</key>
 	<true/>
 	<key>com.apple.private.security.storage.AppDataContainers</key>
 	<true/>

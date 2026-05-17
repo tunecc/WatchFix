@@ -1,7 +1,7 @@
 TARGET := iphone:clang:16.5:15.0
 ARCHS = arm64 arm64e
 INSTALL_TARGET_PROCESSES = WatchFix
-THEOS_PACKAGE_SCHEME=roothide
+THEOS_PACKAGE_SCHEME ?= roothide
 
 ifeq ($(THEOS_PACKAGE_SCHEME),rootless)
 THEOS_PACKAGE_DIR = packages/rootless

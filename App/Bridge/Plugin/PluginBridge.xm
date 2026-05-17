@@ -14,6 +14,7 @@
 #include <roothide.h>
 
 static NSString *const kStateRelativePath = @"/var/mobile/Library/Preferences/cn.fkj233.watchfix.plist";
+NSString *const WFPreferredAppLanguageDefaultsKey = @"WatchFixPreferredLanguage";
 static NSString *const kPluginStatesKey = @"PluginStates";
 static NSString *const kPluginConfigurationsKey = @"PluginConfigurations";
 static NSString *const kPairingConfigurationKey = @"PairingCompatibility";
@@ -37,6 +38,90 @@ static WFPluginConfigurationContext *PluginConfigurationContextForPluginNamed(NS
 static Class PluginConfigurationProviderClass(NSString *pluginName, NSDictionary *pluginInfo);
 
 NSNotificationName const WFPluginBridgeDidChangeNotification = @"WFPluginBridgeDidChangeNotification";
+
+static NSString *NormalizedLanguageIdentifier(NSString *identifier) {
+    if (identifier.length == 0) {
+        return nil;
+    }
+
+    NSString *lowercase = identifier.lowercaseString;
+    if ([lowercase hasPrefix:@"zh-hans"]) {
+        return @"zh-Hans";
+    }
+    if ([lowercase hasPrefix:@"zh-hant"] || [lowercase hasPrefix:@"zh-tw"] || [lowercase hasPrefix:@"zh-hk"]) {
+        return @"zh-Hant";
+    }
+    if ([lowercase hasPrefix:@"en"]) {
+        return @"en";
+    }
+    return nil;
+}
+
+static NSString *SystemPreferredAppLanguageIdentifier(void) {
+    for (NSString *preferredLanguage in [NSLocale preferredLanguages]) {
+        NSString *normalized = NormalizedLanguageIdentifier(preferredLanguage);
+        if (normalized.length > 0) {
+            return normalized;
+        }
+    }
+    return @"zh-Hans";
+}
+
+NSString *WFCurrentPreferredAppLanguageIdentifier(void) {
+    NSString *stored = [[NSUserDefaults standardUserDefaults] stringForKey:WFPreferredAppLanguageDefaultsKey];
+    NSString *normalized = NormalizedLanguageIdentifier(stored);
+    return normalized ?: SystemPreferredAppLanguageIdentifier();
+}
+
+void WFSetPreferredAppLanguageIdentifier(NSString *identifier) {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSString *normalized = NormalizedLanguageIdentifier(identifier);
+    if (normalized.length > 0) {
+        [defaults setObject:normalized forKey:WFPreferredAppLanguageDefaultsKey];
+    } else {
+        [defaults removeObjectForKey:WFPreferredAppLanguageDefaultsKey];
+    }
+    [defaults synchronize];
+}
+
+static NSString *LocalizedStringFromBundle(NSBundle *bundle, NSString *key, NSString *fallback) {
+    if (key.length == 0) {
+        return fallback ?: @"";
+    }
+
+    if (!bundle) {
+        return fallback ?: key;
+    }
+
+    NSString *preferredLanguage = WFCurrentPreferredAppLanguageIdentifier();
+    NSArray<NSString *> *candidates = preferredLanguage.length > 0 && ![preferredLanguage isEqualToString:@"en"]
+        ? @[preferredLanguage, @"en"]
+        : @[@"en"];
+
+    for (NSString *candidate in candidates) {
+        NSString *localizationPath = [bundle pathForResource:candidate ofType:@"lproj"];
+        if (localizationPath.length == 0) {
+            continue;
+        }
+
+        NSBundle *localizedBundle = [NSBundle bundleWithPath:localizationPath];
+        NSString *localized = [localizedBundle localizedStringForKey:key value:nil table:nil];
+        if (localized.length > 0 && ![localized isEqualToString:key]) {
+            return localized;
+        }
+    }
+
+    NSString *bundleLocalized = [bundle localizedStringForKey:key value:nil table:nil];
+    if (bundleLocalized.length > 0 && ![bundleLocalized isEqualToString:key]) {
+        return bundleLocalized;
+    }
+
+    return fallback ?: key;
+}
+
+NSString *WFLocalizedAppString(NSString *key, NSString *fallback) {
+    return LocalizedStringFromBundle([NSBundle mainBundle], key, fallback);
+}
 
 static void PostPluginBridgeDidChangeNotification(void) {
     [[NSNotificationCenter defaultCenter] postNotificationName:WFPluginBridgeDidChangeNotification object:nil];
@@ -281,26 +366,7 @@ static NSString *PluginLocalizationKey(NSString *pluginName, NSString *suffix) {
 }
 
 static NSString *LocalizedPluginStringNamed(NSString *pluginName, NSString *key, NSString *fallback) {
-    if (key.length == 0) {
-        return fallback ?: @"";
-    }
-
-    NSBundle *pluginBundle = PluginBundleNamed(pluginName);
-    NSString *localized = [pluginBundle localizedStringForKey:key value:nil table:nil];
-    if (localized.length > 0 && ![localized isEqualToString:key]) {
-        return localized;
-    }
-
-    NSString *englishLocalizationPath = [pluginBundle pathForResource:@"en" ofType:@"lproj"];
-    if (englishLocalizationPath.length > 0) {
-        NSBundle *englishBundle = [NSBundle bundleWithPath:englishLocalizationPath];
-        localized = [englishBundle localizedStringForKey:key value:nil table:nil];
-        if (localized.length > 0 && ![localized isEqualToString:key]) {
-            return localized;
-        }
-    }
-
-    return fallback ?: key;
+    return LocalizedStringFromBundle(PluginBundleNamed(pluginName), key, fallback);
 }
 
 @interface WFPluginConfigurationContext ()
@@ -328,7 +394,12 @@ static NSString *LocalizedPluginStringNamed(NSString *pluginName, NSString *key,
     NSString *titleFallback = StringOrNil(manifest[@"WFPluginName"]) ?: _pluginIdentifier;
     NSString *detailFallback = StringOrNil(manifest[@"WFPluginDescription"]) ?: @"";
     _pluginTitle = [LocalizedPluginStringNamed(_pluginIdentifier, PluginLocalizationKey(_pluginIdentifier, @"title"), titleFallback) copy];
-    _pluginDetail = [LocalizedPluginStringNamed(_pluginIdentifier, PluginLocalizationKey(_pluginIdentifier, @"detail"), detailFallback) copy];
+    NSString *appDetailKey = [NSString stringWithFormat:@"plugin.help.%@.tagline", _pluginIdentifier];
+    NSString *appDetail = WFLocalizedAppString(appDetailKey, nil);
+    if ([appDetail isEqualToString:appDetailKey]) {
+        appDetail = nil;
+    }
+    _pluginDetail = [(appDetail.length > 0 ? appDetail : LocalizedPluginStringNamed(_pluginIdentifier, PluginLocalizationKey(_pluginIdentifier, @"detail"), detailFallback)) copy];
     _pluginManifest = [manifest copy] ?: @{};
     _pluginInstalled = [DirectInstalledPluginStates()[_pluginIdentifier] boolValue];
     return self;

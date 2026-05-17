@@ -10,6 +10,10 @@ final class RestartViewController: WFScrollStackViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func localizedNavigationTitle() -> String? {
+        L("landing.restart.title")
+    }
+
     override func render() {
         resetContent()
 

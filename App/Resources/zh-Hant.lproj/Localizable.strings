@@ -102,6 +102,7 @@
 "features.plugins.empty" = "目前沒有安裝任何已知修復。";
 "features.plugins.unavailable" = "目前未安裝此修復。";
 "features.plugins.configure" = "設定";
+"features.plugins.details" = "詳情";
 "features.plugins.validation.system" = "需要 iOS %1$@ 或更新版本。";
 "features.plugins.validation.system.maximum" = "此插件不支援 iOS %1$@ 以上版本。";
 "features.plugins.validation.watch" = "需要 watchOS %1$@ 或更新版本。";
@@ -235,3 +236,113 @@
 "alert.settingsSaved.message" = "插件設定已儲存。";
 "alert.watchRebooted.message" = "已向目前作用中 Apple Watch 傳送重新啟動請求。";
 "alert.servicesRestarted.message" = "與 Apple Watch 相關的服務已重新啟動。";
+
+"about.language.title" = "App 語言";
+"about.language.button" = "切換語言";
+
+"plugin.help.section.title" = "詳細說明";
+"plugin.help.section.footer" = "先看用途說明，再展開技術細節查看它會注入哪些 bundle 和程序。";
+"plugin.help.action.show" = "查看詳細說明";
+"plugin.help.action.hide" = "收起詳細說明";
+"plugin.help.summary.title" = "這項修復會做什麼";
+"plugin.help.examples.title" = "常見使用情境";
+"plugin.help.requirements.title" = "系統與裝置要求";
+"plugin.help.targets.bundles" = "會注入的 Bundle";
+"plugin.help.targets.executables" = "會注入的程序";
+"plugin.help.technical.show" = "展開技術細節";
+"plugin.help.technical.hide" = "收起技術細節";
+"plugin.help.empty" = "這個插件暫時還沒有補充的說明文案。";
+"plugin.help.requirement.ios.minimum" = "需要 iOS %@ 或更新版本。";
+"plugin.help.requirement.ios.maximum" = "設計目標是低於 iOS %@ 的系統版本。";
+"plugin.help.requirement.watch.minimum" = "需要 watchOS %@ 或更新版本。";
+"plugin.help.requirement.capability" = "這項修復要求目前配對手錶具備對應的硬體 capability。";
+"plugin.help.requirement.osRestrictions" = "這項修復只適用於特定的 iOS 與 watchOS 版本組合。";
+
+"plugin.help.APSSupport.tagline" = "補強訊息、對講機等訊息服務依賴的在線狀態回報鏈路。";
+"plugin.help.APSSupport.summary" = "這個修復會在 apsd 收到手錶側的 presence 事件後，主動把代理已連通的狀態回報給 IDS 代理管理器。它針對的是「手錶其實已經在線，但訊息鏈路還被系統判定成離線」的情況。";
+"plugin.help.APSSupport.example.1" = "如果 Apple Watch 明明已經連著手機，但「訊息」一直轉圈、對講機列表不更新，這個修復補的就是那段連通狀態上報。";
+"plugin.help.APSSupport.example.2" = "它主要是在修狀態判斷，不會直接替你重配 Apple ID、推送權杖或網路設定。";
+
+"plugin.help.AppsSupport.tagline" = "放寬手錶 App 安裝校驗，讓更多 App 還能繼續下發到較新的手錶。";
+"plugin.help.AppsSupport.summary" = "它一邊給 appconduitd 補上缺失的系統 App 對應，一邊讓 Watch bundle 的版本校驗把目標 watchOS 視為更高相容版本，從而繞過「手錶系統太新，當前 App 不適用」的限制。";
+"plugin.help.AppsSupport.example.1" = "常見現象是 iPhone 端能看到手錶 App，但安裝按鈕變灰，或者系統直接說目前 watchOS 不支援安裝。";
+"plugin.help.AppsSupport.example.2" = "它不會憑空生成不存在的 App，只是讓本來就能裝的套件更容易通過版本門檻。";
+
+"plugin.help.LayoutSupport.tagline" = "修正較新 watchOS 的圖示佈局同步，讓主畫面排列還能寫回手錶。";
+"plugin.help.LayoutSupport.summary" = "程式碼會直接改寫 com.apple.Carousel 裡的 IconPositions 資料，把新版六邊形佈局重排成舊主機仍能接受的 3-4-3 結構，並主動觸發 nano domain 同步。";
+"plugin.help.LayoutSupport.example.1" = "如果你在 iPhone 上調整手錶主畫面圖示順序後，手錶端佈局回彈、打亂或根本存不住，通常就和這一層相容有關。";
+"plugin.help.LayoutSupport.example.2" = "它更像是在修佈局資料結構，不是額外給你做一個全新的排版編輯器。";
+
+"plugin.help.LockdownModeSupport.tagline" = "把鎖定模式對應的服務宣告補回舊版 iPhone，讓手錶側相關入口重新出現。";
+"plugin.help.LockdownModeSupport.summary" = "當 identityservicesd 載入服務字典時，這個修復會把 Lockdown Mode 那條定義補進去。它修的是「手錶知道有這個功能，但手機側服務表裡根本沒登記」的相容缺口。";
+"plugin.help.LockdownModeSupport.example.1" = "較新的手錶配到較舊 iPhone 上時，鎖定模式聯動項可能完全不顯示。";
+"plugin.help.LockdownModeSupport.example.2" = "它主要補的是服務註冊，不代表能繞過所有與鎖定模式有關的系統限制。";
+
+"plugin.help.MediaSyncSupport.tagline" = "修復離線音樂與播放清單同步依賴的 Keep Local 請求鏈路。";
+"plugin.help.MediaSyncSupport.summary" = "這個插件會在 Bridge 和 NanoMusicSync 裡重建相容的 Keep Local 同步流程。原本系統如果不能把專輯或播放清單正確下發到手錶，它會改用 IDS 訊息和 protobuf 負載來推動同步。";
+"plugin.help.MediaSyncSupport.example.1" = "常見情況是你點了「下載到 Apple Watch」，介面看起來開始了，但手錶上始終沒有離線歌曲。";
+"plugin.help.MediaSyncSupport.example.2" = "它修的是相容與傳輸層，不會取代 Apple Music 本身的訂閱或授權檢查。";
+
+"plugin.help.MobileDataSupport.tagline" = "修復蜂窩能力判斷，讓蜂窩版 Apple Watch 的開通入口重新出現。";
+"plugin.help.MobileDataSupport.summary" = "插件會攔截 CommCenter 的校驗流程，結合已配對手錶的 productType、watchOS 與蜂窩 capability，重寫主機讀到的營運商設定結果，解決系統誤判「這塊錶不支援蜂窩」的情況。";
+"plugin.help.MobileDataSupport.example.1" = "如果手錶明明是蜂窩版，但 iPhone 裡始終沒有「蜂窩網路」設定頁，這個修復最直接。";
+"plugin.help.MobileDataSupport.example.2" = "它只在系統誤判設備能力時有幫助，不會替你開通營運商方案。";
+
+"plugin.help.NanoMapsSupport.tagline" = "修復地圖路線預覽訊息結構，讓導航還能正常發到手錶。";
+"plugin.help.NanoMapsSupport.summary" = "它會改寫 nanomapscd 收到的預覽導航訊息，把舊主機不認識的 waypoint 清單拆成起點和終點欄位，並強制讀取完整的 GeoMapItem 資料後再繼續下發。";
+"plugin.help.NanoMapsSupport.example.1" = "典型現象是在手機上發起路線後，手錶端完全收不到導航預覽，或只顯示一半資訊。";
+"plugin.help.NanoMapsSupport.example.2" = "這個修復主要解決訊息格式相容，不會改變 Apple 地圖本身算出來的路線。";
+
+"plugin.help.PairingCompatibility.tagline" = "補齊配對鏈路裡的版本、註冊表、BLE、IDS、PassKit 和宿主版本偽裝 hooks。";
+"plugin.help.PairingCompatibility.summary" = "這是 WatchFix 裡最核心的一組修復。它會擴展 NanoRegistry 的配對相容範圍，同時在多個系統進程裡打開 framework、藍牙、IDS、模擬 iOS 版本、PassKit 等 hooks，讓舊 iPhone 還能和較新的手錶完成配對並維持後續通訊。";
+"plugin.help.PairingCompatibility.example.1" = "如果你已經掃到了配對碼，但總卡在「無法配對」、初始化失敗，或配對後立刻掉線，通常都要先看這一項。";
+"plugin.help.PairingCompatibility.example.2" = "因為它會影響很多服務，所以安裝或改設定後通常需要重新啟動相關進程，效果才會穩定。";
+
+"plugin.help.PhotoLibrarySupport.tagline" = "修復照片同步依賴的訊息、快照與資源傳輸鏈路。";
+"plugin.help.PhotoLibrarySupport.summary" = "插件在 nptocompaniond 裡重建了舊系統缺失的照片同步流程：會傳送同步訊號、回應快照請求、按需匯出照片資源，並在需要時把返回的圖片重新匯入到手機側圖庫。";
+"plugin.help.PhotoLibrarySupport.example.1" = "如果你在 iPhone 上選好了同步相簿，但手錶圖庫始終不更新，或者照片錶面一直空白，這個修復最相關。";
+"plugin.help.PhotoLibrarySupport.example.2" = "它主要是在修傳輸和 protobuf 互動，不會替你決定 Apple Photos 應該挑哪幾張照片。";
+
+"plugin.help.PingMyWatchControlCenter.tagline" = "在控制中心加入「呼叫 Apple Watch」，並用 helper 程序去真正發起響鈴請求。";
+"plugin.help.PingMyWatchControlCenter.summary" = "這個插件會安裝一個控制中心模組和輔助執行檔。點下模組後，程式碼會先確認目前作用中手錶支援 ping capability，再拉起 helper 去真正傳送響鈴命令。";
+"plugin.help.PingMyWatchControlCenter.example.1" = "適合手錶就在附近但一時找不到位置時，直接從 iPhone 控制中心讓它發聲。";
+"plugin.help.PingMyWatchControlCenter.example.2" = "如果目前手錶本身不支援 ping，這個模組會明確提示不支援，而不是假裝成功。";
+
+"plugin.help.WatchAppSupport.tagline" = "修復手錶型號資源、尺寸材質對應、資源拉取和部分配對畫面。";
+"plugin.help.WatchAppSupport.summary" = "這一組 hook 會同時改 Bridge 與 SharingViewService：補產品型號到尺寸/材質的對應、修遠端圖片與資源拉取、修配對流程中的進度視圖，以及軟體更新和無法配對等提示畫面。";
+"plugin.help.WatchAppSupport.example.1" = "常見現象是 Watch App 裡手錶圖片顯示不出來、型號名稱不對、進度畫面排版異常，或配對頁提示殘缺。";
+"plugin.help.WatchAppSupport.example.2" = "它更偏向資源和介面相容修復，不是直接改配對範圍的那一層。";
+
+"plugin.help.WatchFaceSupport.tagline" = "讓 iPhone 至少能識別和展示較新 watchOS 錶面的占位資訊。";
+"plugin.help.WatchFaceSupport.summary" = "插件會在 Bridge、NTKFaceSnapshotService 和 nanotimekitcompaniond 之間塞入一個占位錶面 bundle。較新的錶面如果舊主機解不出來，就會被轉成可枚舉、可展示、可保留設定的 stub 物件，而不是直接遺失。";
+"plugin.help.WatchFaceSupport.example.1" = "如果手錶已經換上新錶面，但 iPhone 端只顯示空白、無效錶面，或完全進不了編輯頁，這個修復會很關鍵。";
+"plugin.help.WatchFaceSupport.example.2" = "它主要是在做相容展示和保底占位，不代表舊版 iPhone 能完整編輯所有新錶面特性。";
+
+"plugin.tech.bundle.com.apple.Bridge" = "Bridge（Watch App 主介面）";
+"plugin.tech.bundle.com.apple.InstalledContentLibrary" = "InstalledContentLibrary（手錶 App 清單庫）";
+"plugin.tech.bundle.com.apple.NTKFaceSnapshotService" = "NTKFaceSnapshotService（錶面快照服務）";
+"plugin.tech.bundle.com.apple.NanoMusicSync" = "NanoMusicSync（手錶音樂同步服務）";
+"plugin.tech.bundle.com.apple.SharingViewService" = "SharingViewService（分享視圖服務）";
+"plugin.tech.bundle.com.apple.private.NanoRegistry" = "NanoRegistry（配對註冊表服務）";
+
+"plugin.tech.executable.apsd" = "apsd（Apple 推送守護進程）";
+"plugin.tech.executable.appconduitd" = "appconduitd（手錶 App 下發服務）";
+"plugin.tech.executable.bluetoothd" = "bluetoothd（藍牙服務）";
+"plugin.tech.executable.Bridge" = "Bridge（iPhone 上的 Watch App 進程）";
+"plugin.tech.executable.com.apple.MobileInstallationHelperService" = "MobileInstallationHelperService（安裝輔助服務）";
+"plugin.tech.executable.companionproxyd" = "companionproxyd（裝置通訊代理）";
+"plugin.tech.executable.CommCenter" = "CommCenter（蜂窩與營運商服務）";
+"plugin.tech.executable.identityservicesd" = "identityservicesd（身份與訊息服務）";
+"plugin.tech.executable.imagent" = "imagent（即時訊息代理）";
+"plugin.tech.executable.installd" = "installd（安裝服務）";
+"plugin.tech.executable.nanomapscd" = "nanomapscd（手錶地圖服務）";
+"plugin.tech.executable.nanoregistryd" = "nanoregistryd（配對註冊表守護進程）";
+"plugin.tech.executable.nanoregistrylaunchd" = "nanoregistrylaunchd（NanoRegistry 啟動代理）";
+"plugin.tech.executable.nanotimekitcompaniond" = "nanotimekitcompaniond（錶面同步服務）";
+"plugin.tech.executable.nptocompaniond" = "nptocompaniond（照片同步服務）";
+"plugin.tech.executable.pairedsyncd" = "pairedsyncd（配對同步服務）";
+"plugin.tech.executable.passd" = "passd（錢包與票卡服務）";
+"plugin.tech.executable.Preferences" = "Preferences（設定 App）";
+"plugin.tech.executable.SpringBoard" = "SpringBoard（桌面與系統 UI）";
+"plugin.tech.executable.terminusd" = "terminusd（手錶通訊中繼）";
+"plugin.tech.executable.wcd" = "wcd（WatchConnectivity 服務）";

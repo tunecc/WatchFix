@@ -10,6 +10,10 @@ final class FeatureViewController: WFScrollStackViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func localizedNavigationTitle() -> String? {
+        L("landing.features.title")
+    }
+
     override func render() {
         resetContent()
 
@@ -36,6 +40,10 @@ final class FeatureViewController: WFScrollStackViewController {
         let installablePluginIDs = unavailablePlugins.filter(\.canInstall).map(\.id)
         let installedToolIDs = toolPlugins.filter(\.available).map(\.id)
         let installableToolIDs = toolPlugins.filter { !$0.available && $0.canInstall }.map(\.id)
+        let isDeletingInstalledPlugins = installedPluginIDs.contains { store.isPluginBusy($0) }
+        let isInstallingUnavailablePlugins = installablePluginIDs.contains { store.isPluginBusy($0) }
+        let isInstallingTools = installableToolIDs.contains { store.isPluginBusy($0) }
+        let isDeletingTools = installedToolIDs.contains { store.isPluginBusy($0) }
 
         var installedContents: [UIView] = [
             WFMakeInfoCard(
@@ -55,7 +63,7 @@ final class FeatureViewController: WFScrollStackViewController {
                         title: L("common.deleteAll"),
                         systemImage: "trash",
                         isPrimary: false,
-                        isLoading: installedPluginIDs.contains(where: store.isPluginBusy),
+                        isLoading: isDeletingInstalledPlugins,
                         isEnabled: !installedPluginIDs.isEmpty,
                         tintColor: .systemRed
                     ) { [weak self] in
@@ -88,7 +96,7 @@ final class FeatureViewController: WFScrollStackViewController {
                     WFMakeActionButton(
                         title: L("common.installAll"),
                         systemImage: "square.and.arrow.down",
-                        isLoading: installablePluginIDs.contains(where: store.isPluginBusy),
+                        isLoading: isInstallingUnavailablePlugins,
                         isEnabled: !installablePluginIDs.isEmpty
                     ) { [weak self] in
                         self?.store.installPlugins(identifiers: installablePluginIDs)
@@ -117,7 +125,7 @@ final class FeatureViewController: WFScrollStackViewController {
                     WFMakeActionButton(
                         title: L("common.installAll"),
                         systemImage: "square.and.arrow.down",
-                        isLoading: installableToolIDs.contains(where: store.isPluginBusy),
+                        isLoading: isInstallingTools,
                         isEnabled: !installableToolIDs.isEmpty
                     ) { [weak self] in
                         self?.store.installPlugins(identifiers: installableToolIDs)
@@ -130,7 +138,7 @@ final class FeatureViewController: WFScrollStackViewController {
                         title: L("common.deleteAll"),
                         systemImage: "trash",
                         isPrimary: false,
-                        isLoading: installedToolIDs.contains(where: store.isPluginBusy),
+                        isLoading: isDeletingTools,
                         isEnabled: !installedToolIDs.isEmpty,
                         tintColor: .systemRed
                     ) { [weak self] in
@@ -157,19 +165,15 @@ final class FeatureViewController: WFScrollStackViewController {
     }
 
     private func makePluginCard(for plugin: PluginState) -> UIView {
-        let onConfiguration: (() -> Void)? = plugin.metadata.hasConfigurationInterface
-            ? { [weak self] in
-                self?.openPluginConfiguration(for: plugin)
-            }
-            : nil
-
         return WFMakePluginCard(
             plugin: plugin,
             isBusy: store.isPluginBusy(plugin.id),
-            configurationTitle: L("features.plugins.configure"),
-            configurationSystemImage: "slider.horizontal.3",
-            isConfigurationEnabled: plugin.metadata.hasConfigurationInterface,
-            onConfiguration: onConfiguration
+            configurationTitle: L("features.plugins.details"),
+            configurationSystemImage: "info.circle",
+            isConfigurationEnabled: !store.isPluginBusy(plugin.id),
+            onConfiguration: { [weak self] in
+                self?.openPluginConfiguration(for: plugin)
+            }
         ) { [weak self] in
             self?.performPluginAction(for: plugin)
         }

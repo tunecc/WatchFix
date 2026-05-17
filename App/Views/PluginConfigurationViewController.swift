@@ -37,6 +37,8 @@ final class PluginConfigurationViewController: WFScrollStackViewController {
     private var draftConfiguration: [String: Any] = [:]
     private var pageLoadError: String?
     private var isSavingConfiguration = false
+    private var isShowingHelp = false
+    private var isShowingTechnicalDetails = false
 
     init(store: Store, plugin: PluginState) {
         pluginIdentifier = plugin.id
@@ -50,11 +52,14 @@ final class PluginConfigurationViewController: WFScrollStackViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func localizedNavigationTitle() -> String? {
+        pageTitle(plugin: currentPlugin)
+    }
+
     override func render() {
         resetContent()
 
         let plugin = currentPlugin
-        title = pageTitle(plugin: plugin)
         contentStack.addArrangedSubview(WFMakePluginHeaderCard(plugin: plugin))
         contentStack.addArrangedSubview(makeInstallationSection(plugin: plugin))
 
@@ -65,9 +70,42 @@ final class PluginConfigurationViewController: WFScrollStackViewController {
                     contents: [WFMakeInfoCard(text: pageLoadError)]
                 )
             )
-            return
+        } else {
+            renderSettingsSections()
+            if !allControlDescriptors().isEmpty {
+                contentStack.addArrangedSubview(makeSaveSection())
+            }
         }
 
+        contentStack.addArrangedSubview(makeHelpSection(plugin: plugin))
+    }
+
+    private var currentPlugin: PluginState {
+        store.plugins.first { $0.id == pluginIdentifier } ?? initialPlugin
+    }
+
+    private func pageTitle(plugin: PluginState) -> String {
+        stringValue(configurationPage[PluginConfigurationPageKey.title], fallback: plugin.title) ?? plugin.title
+    }
+
+    private func reloadConfiguration() {
+        var bridgeError: NSError?
+        configurationPage = WFPluginBridge.configurationPage(forPluginNamed: pluginIdentifier, error: &bridgeError)
+        if let bridgeError {
+            configurationPage = [:]
+            pageLoadError = bridgeError.localizedDescription
+        } else {
+            pageLoadError = nil
+        }
+
+        savedConfiguration = WFPluginBridge.configuration(forPluginNamed: pluginIdentifier)
+        draftConfiguration = defaultConfiguration()
+        for (key, value) in savedConfiguration {
+            draftConfiguration[key] = value
+        }
+    }
+
+    private func renderSettingsSections() {
         let sections = sectionDescriptors()
         if sections.isEmpty {
             contentStack.addArrangedSubview(
@@ -93,35 +131,6 @@ final class PluginConfigurationViewController: WFScrollStackViewController {
                     contents: contents
                 )
             )
-        }
-
-        if !allControlDescriptors().isEmpty {
-            contentStack.addArrangedSubview(makeSaveSection())
-        }
-    }
-
-    private var currentPlugin: PluginState {
-        store.plugins.first { $0.id == pluginIdentifier } ?? initialPlugin
-    }
-
-    private func pageTitle(plugin: PluginState) -> String {
-        stringValue(configurationPage[PluginConfigurationPageKey.title], fallback: plugin.title) ?? plugin.title
-    }
-
-    private func reloadConfiguration() {
-        var bridgeError: NSError?
-        configurationPage = WFPluginBridge.configurationPage(forPluginNamed: pluginIdentifier, error: &bridgeError)
-        if let bridgeError {
-            configurationPage = [:]
-            pageLoadError = bridgeError.localizedDescription
-        } else {
-            pageLoadError = nil
-        }
-
-        savedConfiguration = WFPluginBridge.configuration(forPluginNamed: pluginIdentifier)
-        draftConfiguration = defaultConfiguration()
-        for (key, value) in savedConfiguration {
-            draftConfiguration[key] = value
         }
     }
 
@@ -194,6 +203,115 @@ final class PluginConfigurationViewController: WFScrollStackViewController {
                 WFMakeCard([saveButton, restoreButton, defaultsButton]),
             ]
         )
+    }
+
+    private func makeHelpSection(plugin: PluginState) -> UIView {
+        let helpContent = plugin.helpContent
+        let helpButtonTitle = isShowingHelp
+            ? L("plugin.help.action.hide")
+            : L("plugin.help.action.show")
+        var contents: [UIView] = [
+            WFMakeCard([
+                WFMakeActionButton(
+                    title: helpButtonTitle,
+                    systemImage: "questionmark.circle",
+                    isPrimary: false
+                ) { [weak self] in
+                    self?.toggleHelp()
+                },
+            ]),
+        ]
+
+        if isShowingHelp {
+            if let helpContent {
+                contents.append(
+                    WFMakeFeatureSummaryCard(
+                        title: L("plugin.help.summary.title"),
+                        detail: helpContent.summary,
+                        symbolName: "sparkles"
+                    )
+                )
+
+                if !helpContent.examples.isEmpty {
+                    contents.append(
+                        WFMakeBulletListCard(
+                            title: L("plugin.help.examples.title"),
+                            items: helpContent.examples,
+                            symbolName: "lightbulb.fill",
+                            tintColor: .systemOrange
+                        )
+                    )
+                }
+
+                if helpContent.hasTechnicalDetails {
+                    contents.append(
+                        WFMakeCard([
+                            WFMakeActionButton(
+                                title: isShowingTechnicalDetails ? L("plugin.help.technical.hide") : L("plugin.help.technical.show"),
+                                systemImage: "wrench.and.screwdriver",
+                                isPrimary: false
+                            ) { [weak self] in
+                                self?.toggleTechnicalDetails()
+                            },
+                        ])
+                    )
+                }
+
+                if isShowingTechnicalDetails {
+                    contents.append(contentsOf: technicalDetailViews(for: helpContent))
+                }
+            } else {
+                contents.append(WFMakeInfoCard(text: L("plugin.help.empty")))
+            }
+        }
+
+        return WFMakeSection(
+            title: L("plugin.help.section.title"),
+            footer: L("plugin.help.section.footer"),
+            contents: contents
+        )
+    }
+
+    private func technicalDetailViews(for helpContent: PluginHelpContent) -> [UIView] {
+        var views: [UIView] = []
+        if !helpContent.requirements.isEmpty {
+            views.append(
+                WFMakeBulletListCard(
+                    title: L("plugin.help.requirements.title"),
+                    items: helpContent.requirements,
+                    symbolName: "checklist",
+                    tintColor: .systemGreen
+                )
+            )
+        }
+        if !helpContent.bundleTargets.isEmpty {
+            views.append(
+                WFMakeReferenceListCard(
+                    title: L("plugin.help.targets.bundles"),
+                    items: referenceItems(from: helpContent.bundleTargets),
+                    symbolName: "shippingbox"
+                )
+            )
+        }
+        if !helpContent.executableTargets.isEmpty {
+            views.append(
+                WFMakeReferenceListCard(
+                    title: L("plugin.help.targets.executables"),
+                    items: referenceItems(from: helpContent.executableTargets),
+                    symbolName: "cpu"
+                )
+            )
+        }
+        return views
+    }
+
+    private func referenceItems(from references: [PluginTechnicalReference]) -> [WFCardReferenceItem] {
+        references.map { reference in
+            WFCardReferenceItem(
+                title: reference.title,
+                detail: reference.title == reference.identifier ? nil : reference.identifier
+            )
+        }
     }
 
     private func renderControl(_ control: [String: Any]) -> UIView {
@@ -427,5 +545,18 @@ final class PluginConfigurationViewController: WFScrollStackViewController {
 
     private func configurationEquals(_ lhs: [String: Any], _ rhs: [String: Any]) -> Bool {
         NSDictionary(dictionary: lhs).isEqual(NSDictionary(dictionary: rhs))
+    }
+
+    private func toggleHelp() {
+        isShowingHelp.toggle()
+        if !isShowingHelp {
+            isShowingTechnicalDetails = false
+        }
+        render()
+    }
+
+    private func toggleTechnicalDetails() {
+        isShowingTechnicalDetails.toggle()
+        render()
     }
 }

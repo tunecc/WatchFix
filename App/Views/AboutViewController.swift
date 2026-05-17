@@ -10,7 +10,12 @@ final class AboutViewController: WFScrollStackViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func localizedNavigationTitle() -> String? {
+        L("landing.about.title")
+    }
+
     override func render() {
+        navigationItem.rightBarButtonItem = makeLanguageButtonItem()
         resetContent()
 
         contentStack.addArrangedSubview(
@@ -136,5 +141,20 @@ final class AboutViewController: WFScrollStackViewController {
         }
 
         UIApplication.shared.open(url)
+    }
+
+    private func makeLanguageButtonItem() -> UIBarButtonItem {
+        let actions = AppLanguage.allCases.map { language in
+            UIAction(
+                title: language.nativeDisplayName,
+                state: store.appLanguage == language ? .on : .off
+            ) { [weak self] _ in
+                self?.store.setAppLanguage(language)
+            }
+        }
+        let menu = UIMenu(title: L("about.language.title"), children: actions)
+        let item = UIBarButtonItem(image: UIImage(systemName: "globe"), menu: menu)
+        item.accessibilityLabel = L("about.language.button")
+        return item
     }
 }

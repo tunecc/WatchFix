@@ -4,6 +4,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 FOUNDATION_EXPORT NSNotificationName const WFPluginBridgeDidChangeNotification;
+FOUNDATION_EXPORT NSString *const WFPreferredAppLanguageDefaultsKey;
+FOUNDATION_EXPORT NSString *WFCurrentPreferredAppLanguageIdentifier(void);
+FOUNDATION_EXPORT void WFSetPreferredAppLanguageIdentifier(NSString * _Nullable identifier);
+FOUNDATION_EXPORT NSString *WFLocalizedAppString(NSString *key, NSString * _Nullable fallback);
 
 @interface WFPluginBridge : NSObject
 

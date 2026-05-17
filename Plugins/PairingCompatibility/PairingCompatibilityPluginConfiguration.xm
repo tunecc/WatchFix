@@ -30,8 +30,99 @@ static NSInteger const kDeviceSupportRangeActivityTimeout = ACTIVE_TIMEOUT;
 
 typedef BOOL (^WFPairingOperationBlock)(NSError **error);
 
+static NSString *WFPairingStringValue(id value);
+
 static NSString *WFPairingConfigurationLocalized(WFPluginConfigurationContext *context, NSString *key) {
     return [context localizedStringForKey:key fallback:nil];
+}
+
+static NSString *WFPairingAppLocalizedString(NSString *key) {
+    NSString *localized = WFLocalizedAppString(key, nil);
+    if ([localized isEqualToString:key]) {
+        return nil;
+    }
+    return localized;
+}
+
+static NSString *WFPairingHelpLocalized(WFPluginConfigurationContext *context, NSString *suffix) {
+    if (!context.pluginIdentifier.length || !suffix.length) {
+        return nil;
+    }
+    return WFPairingAppLocalizedString([NSString stringWithFormat:@"plugin.help.%@.%@", context.pluginIdentifier, suffix]);
+}
+
+static NSArray<NSString *> *WFPairingStringArray(id value) {
+    if (![value isKindOfClass:[NSArray class]]) {
+        return @[];
+    }
+
+    NSMutableArray<NSString *> *normalized = [NSMutableArray array];
+    NSMutableOrderedSet<NSString *> *seen = [NSMutableOrderedSet orderedSet];
+    for (id entry in (NSArray *)value) {
+        NSString *stringValue = WFPairingStringValue(entry);
+        NSString *trimmedValue = [stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        if (trimmedValue.length == 0 || [seen containsObject:trimmedValue]) {
+            continue;
+        }
+        [seen addObject:trimmedValue];
+        [normalized addObject:trimmedValue];
+    }
+    return normalized;
+}
+
+static NSString *WFPairingTechnicalTitle(NSString *kind, NSString *identifier) {
+    if (kind.length == 0 || identifier.length == 0) {
+        return identifier ?: @"";
+    }
+
+    NSString *localized = WFPairingAppLocalizedString([NSString stringWithFormat:@"plugin.tech.%@.%@", kind, identifier]);
+    return localized.length > 0 ? localized : identifier;
+}
+
+static NSString *WFPairingFormattedVersion(NSInteger encodedVersion) {
+    NSInteger major = (encodedVersion >> 16) & 0xFF;
+    NSInteger minor = (encodedVersion >> 8) & 0xFF;
+    NSInteger patch = encodedVersion & 0xFF;
+    if (patch > 0) {
+        return [NSString stringWithFormat:@"%ld.%ld.%ld", (long)major, (long)minor, (long)patch];
+    }
+    return [NSString stringWithFormat:@"%ld.%ld", (long)major, (long)minor];
+}
+
+static NSArray<NSString *> *WFPairingRequirementNotes(WFPluginConfigurationContext *context) {
+    NSDictionary<NSString *, id> *manifest = context.pluginManifest ?: @{};
+    NSMutableArray<NSString *> *notes = [NSMutableArray array];
+
+    NSNumber *minimumSystemVersion = manifest[@"WFPluginMinimumSystemVersion"];
+    if ([minimumSystemVersion isKindOfClass:[NSNumber class]] && minimumSystemVersion.integerValue > 0) {
+        [notes addObject:[NSString stringWithFormat:(WFPairingAppLocalizedString(@"plugin.help.requirement.ios.minimum") ?: @"Requires iOS %@ or later."), WFPairingFormattedVersion(minimumSystemVersion.integerValue)]];
+    }
+
+    NSNumber *maximumSystemVersion = manifest[@"WFPluginMaximumSystemVersion"];
+    if ([maximumSystemVersion isKindOfClass:[NSNumber class]] && maximumSystemVersion.integerValue > 0) {
+        [notes addObject:[NSString stringWithFormat:(WFPairingAppLocalizedString(@"plugin.help.requirement.ios.maximum") ?: @"Designed for iOS versions below %@."), WFPairingFormattedVersion(maximumSystemVersion.integerValue)]];
+    }
+
+    NSNumber *minimumWatchOSVersion = manifest[@"WFPluginMinimumWatchOSVersion"];
+    if ([minimumWatchOSVersion isKindOfClass:[NSNumber class]] && minimumWatchOSVersion.integerValue > 0) {
+        [notes addObject:[NSString stringWithFormat:(WFPairingAppLocalizedString(@"plugin.help.requirement.watch.minimum") ?: @"Requires watchOS %@ or later."), WFPairingFormattedVersion(minimumWatchOSVersion.integerValue)]];
+    }
+
+    if (WFPairingStringArray(manifest[@"WFPluginNanoCapabilities"]).count > 0) {
+        NSString *capabilityNote = WFPairingAppLocalizedString(@"plugin.help.requirement.capability");
+        if (capabilityNote.length > 0) {
+            [notes addObject:capabilityNote];
+        }
+    }
+
+    if ([manifest[@"WFPluginOSRestrictions"] isKindOfClass:[NSArray class]] && [(NSArray *)manifest[@"WFPluginOSRestrictions"] count] > 0) {
+        NSString *restrictionNote = WFPairingAppLocalizedString(@"plugin.help.requirement.osRestrictions");
+        if (restrictionNote.length > 0) {
+            [notes addObject:restrictionNote];
+        }
+    }
+
+    return notes;
 }
 
 static NSString *WFPairingStringValue(id value) {
@@ -301,6 +392,8 @@ static BOOL WFPairingApplyDeviceSupportRange(BOOL enabled, NSDictionary<NSString
 @property (nonatomic, copy) NSDictionary<NSString *, id> *savedConfiguration;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, id> *draftConfiguration;
 @property (nonatomic, assign) BOOL isWorking;
+@property (nonatomic, assign) BOOL showingHelp;
+@property (nonatomic, assign) BOOL showingTechnicalDetails;
 
 - (instancetype)initWithContext:(WFPluginConfigurationContext *)context;
 
@@ -389,6 +482,7 @@ static BOOL WFPairingApplyDeviceSupportRange(BOOL enabled, NSDictionary<NSString
     [self.contentStack addArrangedSubview:[self makeFeatureSection]];
     [self.contentStack addArrangedSubview:[self makeSettingsSection]];
     [self.contentStack addArrangedSubview:[self makeSaveSection]];
+    [self.contentStack addArrangedSubview:[self makeHelpSection]];
 }
 
 - (UIView *)makeHeaderCard {
@@ -578,6 +672,107 @@ static BOOL WFPairingApplyDeviceSupportRange(BOOL enabled, NSDictionary<NSString
                               contents:@[statusCard, buttonCard]];
 }
 
+- (UIView *)makeHelpSection {
+    NSString *showTitle = WFPairingAppLocalizedString(self.showingHelp ? @"plugin.help.action.hide" : @"plugin.help.action.show")
+        ?: (self.showingHelp ? @"Hide Detailed Notes" : @"Show Detailed Notes");
+    UIButton *toggleButton = [self makeButtonWithTitle:showTitle
+                                           systemImage:@"questionmark.circle"
+                                             isPrimary:NO
+                                             tintColor:nil
+                                               enabled:!self.isWorking
+                                                action:@selector(helpButtonTapped)];
+
+    NSMutableArray<UIView *> *contents = [NSMutableArray arrayWithObject:[self makeCardWithArrangedSubviews:@[toggleButton] spacing:12]];
+    if (self.showingHelp) {
+        NSString *summary = WFPairingHelpLocalized(self.context, @"summary");
+        if (summary.length > 0) {
+            [contents addObject:[self makeFeatureSummaryCardWithTitle:WFPairingAppLocalizedString(@"plugin.help.summary.title") ?: @"What this fix does"
+                                                               detail:summary
+                                                           systemImage:@"sparkles"
+                                                             tintColor:UIColor.systemBlueColor]];
+        } else {
+            [contents addObject:[self makeInfoCardWithText:WFPairingAppLocalizedString(@"plugin.help.empty") ?: @"No additional notes are available for this plugin yet."]];
+        }
+
+        NSMutableArray<NSString *> *examples = [NSMutableArray array];
+        for (NSInteger index = 1; index <= 3; index++) {
+            NSString *example = WFPairingHelpLocalized(self.context, [NSString stringWithFormat:@"example.%ld", (long)index]);
+            if (example.length > 0) {
+                [examples addObject:example];
+            }
+        }
+        if (examples.count > 0) {
+            [contents addObject:[self makeBulletListCardWithTitle:WFPairingAppLocalizedString(@"plugin.help.examples.title") ?: @"Examples"
+                                                            items:examples
+                                                      systemImage:@"lightbulb.fill"
+                                                        tintColor:UIColor.systemOrangeColor]];
+        }
+
+        NSArray<UIView *> *technicalViews = [self technicalDetailViews];
+        if (technicalViews.count > 0) {
+            NSString *technicalTitle = WFPairingAppLocalizedString(self.showingTechnicalDetails ? @"plugin.help.technical.hide" : @"plugin.help.technical.show")
+                ?: (self.showingTechnicalDetails ? @"Hide Technical Details" : @"Show Technical Details");
+            UIButton *technicalButton = [self makeButtonWithTitle:technicalTitle
+                                                      systemImage:@"wrench.and.screwdriver"
+                                                        isPrimary:NO
+                                                        tintColor:nil
+                                                          enabled:!self.isWorking
+                                                           action:@selector(technicalDetailsButtonTapped)];
+            [contents addObject:[self makeCardWithArrangedSubviews:@[technicalButton] spacing:12]];
+            if (self.showingTechnicalDetails) {
+                [contents addObjectsFromArray:technicalViews];
+            }
+        }
+    }
+
+    return [self makeSectionWithTitle:WFPairingAppLocalizedString(@"plugin.help.section.title") ?: @"Detailed Notes"
+                               footer:WFPairingAppLocalizedString(@"plugin.help.section.footer") ?: @"Open the notes to see a friendlier explanation, then expand technical details for injection targets."
+                              contents:contents];
+}
+
+- (NSArray<UIView *> *)technicalDetailViews {
+    NSMutableArray<UIView *> *views = [NSMutableArray array];
+
+    NSArray<NSString *> *requirements = WFPairingRequirementNotes(self.context);
+    if (requirements.count > 0) {
+        [views addObject:[self makeBulletListCardWithTitle:WFPairingAppLocalizedString(@"plugin.help.requirements.title") ?: @"System Requirements"
+                                                     items:requirements
+                                               systemImage:@"checklist"
+                                                 tintColor:UIColor.systemGreenColor]];
+    }
+
+    NSDictionary<NSString *, id> *manifest = self.context.pluginManifest ?: @{};
+    NSDictionary<NSString *, id> *injectionTargets = [manifest[@"WFPluginInjectionTargets"] isKindOfClass:[NSDictionary class]] ? manifest[@"WFPluginInjectionTargets"] : @{};
+    NSArray<NSString *> *bundleTargets = WFPairingStringArray(injectionTargets[@"Bundles"]);
+    NSArray<NSString *> *executableTargets = WFPairingStringArray(injectionTargets[@"Executables"]);
+
+    if (bundleTargets.count > 0) {
+        [views addObject:[self makeReferenceListCardWithTitle:WFPairingAppLocalizedString(@"plugin.help.targets.bundles") ?: @"Injected Bundles"
+                                                        items:[self referenceItemsFromIdentifiers:bundleTargets kind:@"bundle"]
+                                                  systemImage:@"shippingbox"]];
+    }
+    if (executableTargets.count > 0) {
+        [views addObject:[self makeReferenceListCardWithTitle:WFPairingAppLocalizedString(@"plugin.help.targets.executables") ?: @"Injected Processes"
+                                                        items:[self referenceItemsFromIdentifiers:executableTargets kind:@"executable"]
+                                                  systemImage:@"cpu"]];
+    }
+
+    return views;
+}
+
+- (NSArray<NSDictionary<NSString *, NSString *> *> *)referenceItemsFromIdentifiers:(NSArray<NSString *> *)identifiers kind:(NSString *)kind {
+    NSMutableArray<NSDictionary<NSString *, NSString *> *> *items = [NSMutableArray array];
+    for (NSString *identifier in identifiers ?: @[]) {
+        NSString *title = WFPairingTechnicalTitle(kind, identifier);
+        NSString *detail = [title isEqualToString:identifier] ? nil : identifier;
+        [items addObject:@{
+            @"title": title ?: identifier ?: @"",
+            @"detail": detail ?: @"",
+        }];
+    }
+    return items;
+}
+
 - (UIView *)makeToggleCardForKey:(NSString *)key
                         titleKey:(NSString *)titleKey
                        detailKey:(NSString *)detailKey
@@ -666,6 +861,101 @@ static BOOL WFPairingApplyDeviceSupportRange(BOOL enabled, NSDictionary<NSString
     textField.spellCheckingType = UITextSpellCheckingTypeNo;
     [textField addTarget:self action:@selector(textFieldChanged:) forControlEvents:UIControlEventEditingChanged];
     return [self makeCardWithArrangedSubviews:@[titleLabel, textField] spacing:8];
+}
+
+- (UIView *)makeFeatureSummaryCardWithTitle:(NSString *)title
+                                     detail:(NSString *)detail
+                                 systemImage:(NSString *)systemImage
+                                   tintColor:(UIColor *)tintColor {
+    UIView *header = [self makeCardHeaderWithTitle:title systemImage:systemImage tintColor:tintColor];
+    UILabel *detailLabel = [self makeLabelWithText:detail
+                                              font:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]
+                                             color:UIColor.secondaryLabelColor
+                                             lines:0];
+    return [self makeCardWithArrangedSubviews:@[header, detailLabel] spacing:10];
+}
+
+- (UIView *)makeBulletListCardWithTitle:(NSString *)title
+                                  items:(NSArray<NSString *> *)items
+                            systemImage:(NSString *)systemImage
+                              tintColor:(UIColor *)tintColor {
+    NSMutableArray<UIView *> *arrangedSubviews = [NSMutableArray array];
+    [arrangedSubviews addObject:[self makeCardHeaderWithTitle:title systemImage:systemImage tintColor:tintColor]];
+    for (NSString *item in items ?: @[]) {
+        [arrangedSubviews addObject:[self makeBulletRowWithText:item]];
+    }
+    return [self makeCardWithArrangedSubviews:arrangedSubviews spacing:10];
+}
+
+- (UIView *)makeReferenceListCardWithTitle:(NSString *)title
+                                     items:(NSArray<NSDictionary<NSString *, NSString *> *> *)items
+                               systemImage:(NSString *)systemImage {
+    NSMutableArray<UIView *> *arrangedSubviews = [NSMutableArray array];
+    [arrangedSubviews addObject:[self makeCardHeaderWithTitle:title systemImage:systemImage tintColor:UIColor.systemBlueColor]];
+    for (NSDictionary<NSString *, NSString *> *item in items ?: @[]) {
+        [arrangedSubviews addObject:[self makeReferenceRowWithItem:item]];
+    }
+    return [self makeCardWithArrangedSubviews:arrangedSubviews spacing:10];
+}
+
+- (UIView *)makeCardHeaderWithTitle:(NSString *)title
+                        systemImage:(NSString *)systemImage
+                          tintColor:(UIColor *)tintColor {
+    UIImageView *iconView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:systemImage ?: @"info.circle"]];
+    iconView.tintColor = tintColor ?: UIColor.systemBlueColor;
+    iconView.preferredSymbolConfiguration = [UIImageSymbolConfiguration configurationWithPointSize:18 weight:UIImageSymbolWeightSemibold];
+    [iconView setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
+
+    UILabel *titleLabel = [self makeLabelWithText:title
+                                             font:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+                                            color:UIColor.labelColor
+                                            lines:0];
+
+    UIStackView *stack = [[UIStackView alloc] initWithArrangedSubviews:@[iconView, titleLabel]];
+    stack.axis = UILayoutConstraintAxisHorizontal;
+    stack.alignment = UIStackViewAlignmentCenter;
+    stack.spacing = 10;
+    return stack;
+}
+
+- (UIView *)makeBulletRowWithText:(NSString *)text {
+    UIImageView *bulletView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"circle.fill"]];
+    bulletView.tintColor = UIColor.tertiaryLabelColor;
+    bulletView.preferredSymbolConfiguration = [UIImageSymbolConfiguration configurationWithPointSize:6 weight:UIImageSymbolWeightSemibold];
+    [bulletView setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
+
+    UILabel *label = [self makeLabelWithText:text
+                                        font:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]
+                                       color:UIColor.secondaryLabelColor
+                                       lines:0];
+
+    UIStackView *stack = [[UIStackView alloc] initWithArrangedSubviews:@[bulletView, label]];
+    stack.axis = UILayoutConstraintAxisHorizontal;
+    stack.alignment = UIStackViewAlignmentTop;
+    stack.spacing = 10;
+    return stack;
+}
+
+- (UIView *)makeReferenceRowWithItem:(NSDictionary<NSString *, NSString *> *)item {
+    NSString *title = item[@"title"] ?: @"";
+    NSString *detail = item[@"detail"];
+
+    UILabel *titleLabel = [self makeLabelWithText:title
+                                             font:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]
+                                            color:UIColor.labelColor
+                                            lines:0];
+    NSMutableArray<UIView *> *arrangedSubviews = [NSMutableArray arrayWithObject:titleLabel];
+    if (detail.length > 0) {
+        [arrangedSubviews addObject:[self makeLabelWithText:detail
+                                                       font:[UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
+                                                      color:UIColor.secondaryLabelColor
+                                                      lines:0]];
+    }
+
+    UIStackView *stack = [[UIStackView alloc] initWithArrangedSubviews:arrangedSubviews];
+    stack.axis = UILayoutConstraintAxisVertical;
+    stack.spacing = 2;
+    return stack;
 }
 
 - (UILabel *)makeLabelWithText:(NSString *)text font:(UIFont *)font color:(UIColor *)color lines:(NSInteger)lines {
@@ -827,6 +1117,19 @@ static BOOL WFPairingApplyDeviceSupportRange(BOOL enabled, NSDictionary<NSString
 
 - (void)defaultsButtonTapped {
     self.draftConfiguration = [WFPairingDefaultConfiguration() mutableCopy];
+    [self renderContent];
+}
+
+- (void)helpButtonTapped {
+    self.showingHelp = !self.showingHelp;
+    if (!self.showingHelp) {
+        self.showingTechnicalDetails = NO;
+    }
+    [self renderContent];
+}
+
+- (void)technicalDetailsButtonTapped {
+    self.showingTechnicalDetails = !self.showingTechnicalDetails;
     [self renderContent];
 }
 

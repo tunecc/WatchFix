@@ -2,6 +2,11 @@ import UIKit
 
 private let WFPluginCardButtonWidth: CGFloat = 124
 
+struct WFCardReferenceItem {
+    let title: String
+    let detail: String?
+}
+
 func WFMakeSection(title: String, footer: String? = nil, contents: [UIView]) -> UIView {
     let stack = UIStackView()
     stack.axis = .vertical
@@ -27,8 +32,10 @@ func WFMakeCard(_ arrangedSubviews: [UIView], spacing: CGFloat = 12) -> UIView {
 
     let container = UIView()
     container.backgroundColor = .secondarySystemGroupedBackground
-    container.layer.cornerRadius = 16
+    container.layer.cornerRadius = 18
     container.layer.cornerCurve = .continuous
+    container.layer.borderWidth = 1 / UIScreen.main.scale
+    container.layer.borderColor = UIColor.separator.withAlphaComponent(0.08).cgColor
     container.addSubview(stack)
 
     NSLayoutConstraint.activate([
@@ -43,6 +50,52 @@ func WFMakeCard(_ arrangedSubviews: [UIView], spacing: CGFloat = 12) -> UIView {
 
 func WFMakeInfoCard(text: String) -> UIView {
     WFMakeCard([WFMakeSecondaryLabel(text)])
+}
+
+func WFMakeFeatureSummaryCard(
+    title: String,
+    detail: String,
+    symbolName: String,
+    tintColor: UIColor = .systemBlue
+) -> UIView {
+    let iconView = WFMakeIconTile(image: nil, symbolName: symbolName, tintColor: tintColor)
+    let titleLabel = WFMakeTextLabel(title, font: .preferredFont(forTextStyle: .headline))
+    let detailLabel = WFMakeSecondaryLabel(detail)
+    let textStack = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
+    textStack.axis = .vertical
+    textStack.spacing = 6
+
+    let headerStack = UIStackView(arrangedSubviews: [iconView, textStack])
+    headerStack.axis = .horizontal
+    headerStack.alignment = .top
+    headerStack.spacing = 12
+    return WFMakeCard([headerStack])
+}
+
+func WFMakeBulletListCard(
+    title: String,
+    items: [String],
+    symbolName: String,
+    tintColor: UIColor = .systemOrange
+) -> UIView {
+    var arrangedSubviews: [UIView] = [
+        makeCardHeader(title: title, symbolName: symbolName, tintColor: tintColor),
+    ]
+    arrangedSubviews.append(contentsOf: items.map(makeBulletRow))
+    return WFMakeCard(arrangedSubviews, spacing: 10)
+}
+
+func WFMakeReferenceListCard(
+    title: String,
+    items: [WFCardReferenceItem],
+    symbolName: String,
+    tintColor: UIColor = .systemBlue
+) -> UIView {
+    var arrangedSubviews: [UIView] = [
+        makeCardHeader(title: title, symbolName: symbolName, tintColor: tintColor),
+    ]
+    arrangedSubviews.append(contentsOf: items.map(makeReferenceRow))
+    return WFMakeCard(arrangedSubviews, spacing: 10)
 }
 
 func WFMakeTextLabel(_ text: String, font: UIFont, color: UIColor = .label, lines: Int = 0) -> UILabel {
@@ -171,6 +224,44 @@ func WFMakeIconTile(image: UIImage?, symbolName: String, tintColor: UIColor) -> 
     ])
 
     return container
+}
+
+private func makeCardHeader(title: String, symbolName: String, tintColor: UIColor) -> UIView {
+    let iconView = WFMakeIconTile(image: nil, symbolName: symbolName, tintColor: tintColor)
+    let titleLabel = WFMakeTextLabel(title, font: .preferredFont(forTextStyle: .headline))
+    let stack = UIStackView(arrangedSubviews: [iconView, titleLabel])
+    stack.axis = .horizontal
+    stack.alignment = .center
+    stack.spacing = 12
+    return stack
+}
+
+private func makeBulletRow(_ text: String) -> UIView {
+    let bulletView = UIImageView(image: UIImage(systemName: "circle.fill"))
+    bulletView.tintColor = .tertiaryLabel
+    bulletView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 6, weight: .semibold)
+    bulletView.setContentHuggingPriority(.required, for: .horizontal)
+    bulletView.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+    let label = WFMakeSecondaryLabel(text)
+    let stack = UIStackView(arrangedSubviews: [bulletView, label])
+    stack.axis = .horizontal
+    stack.alignment = .top
+    stack.spacing = 10
+    return stack
+}
+
+private func makeReferenceRow(_ item: WFCardReferenceItem) -> UIView {
+    let titleLabel = WFMakeTextLabel(item.title, font: .preferredFont(forTextStyle: .subheadline))
+    var arrangedSubviews: [UIView] = [titleLabel]
+    if let detail = item.detail, !detail.isEmpty {
+        arrangedSubviews.append(WFMakeFootnoteLabel(detail))
+    }
+
+    let stack = UIStackView(arrangedSubviews: arrangedSubviews)
+    stack.axis = .vertical
+    stack.spacing = 2
+    return stack
 }
 
 func WFMakeCompatibilityCard(report: WatchCompatibilityReport) -> UIView {

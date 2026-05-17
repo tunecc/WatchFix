@@ -25,11 +25,13 @@ class WFScrollStackViewController: UIViewController {
         view.backgroundColor = .systemGroupedBackground
         setupLayout()
         bindStore()
+        applyLocalizedTitleIfNeeded()
         render()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        applyLocalizedTitleIfNeeded()
         render()
     }
 
@@ -41,6 +43,8 @@ class WFScrollStackViewController: UIViewController {
             }
             .store(in: &cancellables)
     }
+
+    func localizedNavigationTitle() -> String? { nil }
 
     func render() {}
 
@@ -85,7 +89,15 @@ class WFScrollStackViewController: UIViewController {
                 return
             }
             self.renderScheduled = false
+            self.applyLocalizedTitleIfNeeded()
             self.render()
         }
+    }
+
+    private func applyLocalizedTitleIfNeeded() {
+        guard let localizedTitle = localizedNavigationTitle() else {
+            return
+        }
+        title = localizedTitle
     }
 }

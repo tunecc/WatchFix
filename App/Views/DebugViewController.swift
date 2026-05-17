@@ -34,6 +34,10 @@ final class DebugViewController: WFScrollStackViewController, UITextFieldDelegat
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func localizedNavigationTitle() -> String? {
+        L("landing.debug.title")
+    }
+
     override func render() {
         resetContent()
 
