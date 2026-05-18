@@ -241,7 +241,7 @@
 "about.language.button" = "切換語言";
 
 "plugin.help.section.title" = "詳細說明";
-"plugin.help.section.footer" = "先看用途說明，再展開技術細節查看它會注入哪些 bundle 和程序。";
+"plugin.help.section.footer" = "展開後會同時顯示用途說明、常見情境，以及它會注入哪些 bundle 和程序。";
 "plugin.help.action.show" = "查看詳細說明";
 "plugin.help.action.hide" = "收起詳細說明";
 "plugin.help.summary.title" = "這項修復會做什麼";
@@ -249,8 +249,6 @@
 "plugin.help.requirements.title" = "系統與裝置要求";
 "plugin.help.targets.bundles" = "會注入的 Bundle";
 "plugin.help.targets.executables" = "會注入的程序";
-"plugin.help.technical.show" = "展開技術細節";
-"plugin.help.technical.hide" = "收起技術細節";
 "plugin.help.empty" = "這個插件暫時還沒有補充的說明文案。";
 "plugin.help.requirement.ios.minimum" = "需要 iOS %@ 或更新版本。";
 "plugin.help.requirement.ios.maximum" = "設計目標是低於 iOS %@ 的系統版本。";
@@ -263,15 +261,15 @@
 "plugin.help.APSSupport.example.1" = "如果 Apple Watch 明明已經連著手機，但「訊息」一直轉圈、對講機列表不更新，這個修復補的就是那段連通狀態上報。";
 "plugin.help.APSSupport.example.2" = "它主要是在修狀態判斷，不會直接替你重配 Apple ID、推送權杖或網路設定。";
 
-"plugin.help.MessagesSupport.tagline" = "恢復 Messages 送裝時使用的系統 App 對應。";
-"plugin.help.MessagesSupport.summary" = "這個修復只補 appconduitd 裡 Messages 對應的系統 App 對應，把手錶端的「訊息」重新識別成可安裝系統 App。它是之前混在 Apps Support 裡的那一小塊。";
-"plugin.help.MessagesSupport.example.1" = "當「訊息」在手錶 App 清單裡消失，或在下發時被當成未對應的系統 App 時，用這個修復。";
-"plugin.help.MessagesSupport.example.2" = "它本身不會修改 watchOS 的版本校驗。";
+"plugin.help.MessagesSupport.tagline" = "避免配對後「訊息」消失，順帶壓住由此引發的異常耗電。";
+"plugin.help.MessagesSupport.summary" = "這項修復是從原專案的 AppsSupport 裡拆分出來的 Messages 專項補丁。程式碼只在 appconduitd 裡補回 `com.apple.MobileSMS` 的 supplemental system app 映射，讓 watchOS 11.4 及之後的手錶在配對後不會把「訊息」識別遺失。對使用者來說，最直接的結果就是避免「訊息」App 消失，以及由此帶出的異常喚醒和巨大耗電問題。";
+"plugin.help.MessagesSupport.example.1" = "如果手錶在配對完成後「訊息」突然消失，或系統把它當成未對應的系統 App，這項修復就是針對這個問題。";
+"plugin.help.MessagesSupport.example.2" = "它現在已經從原專案的 AppsSupport 單獨拆出來，目的就是把「訊息」消失這件事和一般應用程式安裝相容問題分開，避免理解混淆。";
 
 "plugin.help.AppsSupport.tagline" = "放寬手錶 App 安裝校驗，讓更多 App 還能繼續下發到較新的手錶。";
 "plugin.help.AppsSupport.summary" = "這個修復只調整 Watch bundle 的版本校驗，讓目標 watchOS 被當成更高相容版本，從而繞過「手錶系統太新，當前 App 不適用」的限制。";
 "plugin.help.AppsSupport.example.1" = "常見現象是 iPhone 端能看到手錶 App，但安裝按鈕變灰，或者系統直接說目前 watchOS 不支援安裝。";
-"plugin.help.AppsSupport.example.2" = "它不會憑空生成不存在的 App，只是讓本來就能裝的套件更容易通過版本門檻。";
+"plugin.help.AppsSupport.example.2" = "它不會憑空生成不存在的 App，也不負責處理應用程式安裝以外的系統相容問題；它只處理安裝器這一層的版本門檻。";
 
 "plugin.help.LayoutSupport.tagline" = "修正較新 watchOS 的圖示佈局同步，讓主畫面排列還能寫回手錶。";
 "plugin.help.LayoutSupport.summary" = "程式碼會直接改寫 com.apple.Carousel 裡的 IconPositions 資料，把新版六邊形佈局重排成舊主機仍能接受的 3-4-3 結構，並主動觸發 nano domain 同步。";

@@ -66,4 +66,5 @@ watchfix-inject-build-info:
 		--configuration-platform "$(WATCHFIX_CONFIGURATION_PLATFORM)"
 
 before-package::
+	find $(THEOS_STAGING_DIR) -name '.DS_Store' -type f -delete 2>/dev/null || true
 	find $(THEOS_STAGING_DIR)/DEBIAN -type f \( -name 'preinst' -o -name 'postinst' -o -name 'extrainst_' -o -name 'prerm' -o -name 'postrm' \) -exec chmod 0755 {} \; 2>/dev/null || true

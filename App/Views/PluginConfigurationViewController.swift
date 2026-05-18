@@ -38,7 +38,6 @@ final class PluginConfigurationViewController: WFScrollStackViewController {
     private var pageLoadError: String?
     private var isSavingConfiguration = false
     private var isShowingHelp = false
-    private var isShowingTechnicalDetails = false
 
     init(store: Store, plugin: PluginState) {
         pluginIdentifier = plugin.id
@@ -244,20 +243,6 @@ final class PluginConfigurationViewController: WFScrollStackViewController {
                 }
 
                 if helpContent.hasTechnicalDetails {
-                    contents.append(
-                        WFMakeCard([
-                            WFMakeActionButton(
-                                title: isShowingTechnicalDetails ? L("plugin.help.technical.hide") : L("plugin.help.technical.show"),
-                                systemImage: "wrench.and.screwdriver",
-                                isPrimary: false
-                            ) { [weak self] in
-                                self?.toggleTechnicalDetails()
-                            },
-                        ])
-                    )
-                }
-
-                if isShowingTechnicalDetails {
                     contents.append(contentsOf: technicalDetailViews(for: helpContent))
                 }
             } else {
@@ -549,14 +534,6 @@ final class PluginConfigurationViewController: WFScrollStackViewController {
 
     private func toggleHelp() {
         isShowingHelp.toggle()
-        if !isShowingHelp {
-            isShowingTechnicalDetails = false
-        }
-        render()
-    }
-
-    private func toggleTechnicalDetails() {
-        isShowingTechnicalDetails.toggle()
         render()
     }
 }

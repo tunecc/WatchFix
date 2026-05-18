@@ -57,6 +57,7 @@ internal-library-stage_::
 			test -d "$$resource_dir" || (echo "Missing plugin resource dir: $$resource_dir" >&2; exit 1); \
 			cp -R "$$resource_dir"/. "$(THEOS_STAGING_DIR)$(WATCHFIX_PLUGIN_STAGE_PATH)"/; \
 		done
+	@find "$(THEOS_STAGING_DIR)$(WATCHFIX_PLUGIN_STAGE_PATH)" -name '.DS_Store' -type f -delete 2>/dev/null || true
 endif
 
 ifeq ($(WATCHFIX_PLUGIN_KIND),bundle_with_tool)
@@ -101,4 +102,5 @@ internal-watchfix-plugin-metadata-stage::
 				cp -R "$$lproj" "$(THEOS_STAGING_DIR)$(WATCHFIX_PLUGIN_STAGE_PATH)"/; \
 			done; \
 		done
+	@find "$(THEOS_STAGING_DIR)$(WATCHFIX_PLUGIN_STAGE_PATH)" -name '.DS_Store' -type f -delete 2>/dev/null || true
 endif

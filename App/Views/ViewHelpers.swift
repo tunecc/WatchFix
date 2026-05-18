@@ -58,18 +58,18 @@ func WFMakeFeatureSummaryCard(
     symbolName: String,
     tintColor: UIColor = .systemBlue
 ) -> UIView {
-    let iconView = WFMakeIconTile(image: nil, symbolName: symbolName, tintColor: tintColor)
-    let titleLabel = WFMakeTextLabel(title, font: .preferredFont(forTextStyle: .headline))
-    let detailLabel = WFMakeSecondaryLabel(detail)
-    let textStack = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
-    textStack.axis = .vertical
-    textStack.spacing = 6
+    var arrangedSubviews: [UIView] = [
+        makeCardHeader(title: title, symbolName: symbolName, tintColor: tintColor),
+    ]
 
-    let headerStack = UIStackView(arrangedSubviews: [iconView, textStack])
-    headerStack.axis = .horizontal
-    headerStack.alignment = .top
-    headerStack.spacing = 12
-    return WFMakeCard([headerStack])
+    let segments = WFReadableSegments(from: detail)
+    if segments.count <= 1 {
+        arrangedSubviews.append(WFMakeReadableBodyLabel(detail))
+    } else {
+        arrangedSubviews.append(contentsOf: segments.map { makeReadableParagraphRow($0, tintColor: tintColor) })
+    }
+
+    return WFMakeCard(arrangedSubviews, spacing: 12)
 }
 
 func WFMakeBulletListCard(
@@ -81,7 +81,9 @@ func WFMakeBulletListCard(
     var arrangedSubviews: [UIView] = [
         makeCardHeader(title: title, symbolName: symbolName, tintColor: tintColor),
     ]
-    arrangedSubviews.append(contentsOf: items.map(makeBulletRow))
+    arrangedSubviews.append(contentsOf: items.enumerated().map { index, item in
+        makeIndexedBulletRow(item, index: index + 1, tintColor: tintColor)
+    })
     return WFMakeCard(arrangedSubviews, spacing: 10)
 }
 
@@ -110,6 +112,29 @@ func WFMakeTextLabel(_ text: String, font: UIFont, color: UIColor = .label, line
 
 func WFMakeSecondaryLabel(_ text: String) -> UILabel {
     WFMakeTextLabel(text, font: .preferredFont(forTextStyle: .subheadline), color: .secondaryLabel)
+}
+
+func WFMakeReadableBodyLabel(_ text: String, color: UIColor = .secondaryLabel) -> UILabel {
+    let label = UILabel()
+    label.numberOfLines = 0
+    label.adjustsFontForContentSizeCategory = true
+    label.textColor = color
+
+    let paragraphStyle = NSMutableParagraphStyle()
+    paragraphStyle.lineSpacing = 4
+    paragraphStyle.paragraphSpacing = 8
+    paragraphStyle.lineBreakMode = .byWordWrapping
+    paragraphStyle.alignment = .natural
+
+    label.attributedText = NSAttributedString(
+        string: text,
+        attributes: [
+            .font: UIFont.preferredFont(forTextStyle: .subheadline),
+            .foregroundColor: color,
+            .paragraphStyle: paragraphStyle,
+        ]
+    )
+    return label
 }
 
 func WFMakeFootnoteLabel(_ text: String, color: UIColor = .secondaryLabel) -> UILabel {
@@ -236,19 +261,117 @@ private func makeCardHeader(title: String, symbolName: String, tintColor: UIColo
     return stack
 }
 
-private func makeBulletRow(_ text: String) -> UIView {
-    let bulletView = UIImageView(image: UIImage(systemName: "circle.fill"))
-    bulletView.tintColor = .tertiaryLabel
-    bulletView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 6, weight: .semibold)
-    bulletView.setContentHuggingPriority(.required, for: .horizontal)
-    bulletView.setContentCompressionResistancePriority(.required, for: .horizontal)
+private func makeIndexedBulletRow(_ text: String, index: Int, tintColor: UIColor) -> UIView {
+    let badgeLabel = WFMakeTextLabel(
+        "\(index)",
+        font: .preferredFont(forTextStyle: .caption1).withSize(12),
+        color: tintColor,
+        lines: 1
+    )
+    badgeLabel.textAlignment = .center
 
-    let label = WFMakeSecondaryLabel(text)
-    let stack = UIStackView(arrangedSubviews: [bulletView, label])
+    let badgeContainer = UIView()
+    badgeContainer.backgroundColor = tintColor.withAlphaComponent(0.14)
+    badgeContainer.layer.cornerRadius = 11
+    badgeContainer.layer.cornerCurve = .continuous
+    badgeContainer.translatesAutoresizingMaskIntoConstraints = false
+    badgeContainer.addSubview(badgeLabel)
+    badgeLabel.translatesAutoresizingMaskIntoConstraints = false
+
+    NSLayoutConstraint.activate([
+        badgeContainer.widthAnchor.constraint(equalToConstant: 22),
+        badgeContainer.heightAnchor.constraint(equalToConstant: 22),
+        badgeLabel.centerXAnchor.constraint(equalTo: badgeContainer.centerXAnchor),
+        badgeLabel.centerYAnchor.constraint(equalTo: badgeContainer.centerYAnchor),
+    ])
+
+    badgeContainer.setContentHuggingPriority(.required, for: .horizontal)
+    badgeContainer.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+    let label = WFMakeReadableBodyLabel(text)
+    let stack = UIStackView(arrangedSubviews: [badgeContainer, label])
     stack.axis = .horizontal
     stack.alignment = .top
     stack.spacing = 10
     return stack
+}
+
+private func makeReadableParagraphRow(_ text: String, tintColor: UIColor) -> UIView {
+    let accentBar = UIView()
+    accentBar.backgroundColor = tintColor.withAlphaComponent(0.35)
+    accentBar.layer.cornerRadius = 1.5
+    accentBar.translatesAutoresizingMaskIntoConstraints = false
+    accentBar.setContentHuggingPriority(.required, for: .horizontal)
+    accentBar.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+    NSLayoutConstraint.activate([
+        accentBar.widthAnchor.constraint(equalToConstant: 3),
+    ])
+
+    let label = WFMakeReadableBodyLabel(text)
+    let stack = UIStackView(arrangedSubviews: [accentBar, label])
+    stack.axis = .horizontal
+    stack.alignment = .top
+    stack.spacing = 10
+    return stack
+}
+
+private func WFReadableSegments(from text: String) -> [String] {
+    let normalizedLines = text
+        .components(separatedBy: .newlines)
+        .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        .filter { !$0.isEmpty }
+    if normalizedLines.count > 1 {
+        return normalizedLines
+    }
+
+    var sentences: [String] = []
+    var current = ""
+    var insideInlineCode = false
+    let characters = Array(text)
+    for (index, character) in characters.enumerated() {
+        current.append(character)
+
+        if character == "`" {
+            insideInlineCode.toggle()
+            continue
+        }
+
+        if insideInlineCode {
+            continue
+        }
+
+        let shouldBreak: Bool
+        switch character {
+        case "。", "！", "？", "；":
+            shouldBreak = true
+        case ".", "!", "?", ";":
+            let nextCharacter = index + 1 < characters.count ? characters[index + 1] : nil
+            shouldBreak = nextCharacter.map(\.isWhitespace) ?? true
+        default:
+            shouldBreak = false
+        }
+
+        if shouldBreak {
+            let trimmed = current.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                sentences.append(trimmed)
+            }
+            current.removeAll(keepingCapacity: true)
+        }
+    }
+
+    let trailing = current.trimmingCharacters(in: .whitespacesAndNewlines)
+    if !trailing.isEmpty {
+        sentences.append(trailing)
+    }
+
+    if sentences.count <= 1 {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? [] : [trimmed]
+    }
+
+    return sentences
 }
 
 private func makeReferenceRow(_ item: WFCardReferenceItem) -> UIView {

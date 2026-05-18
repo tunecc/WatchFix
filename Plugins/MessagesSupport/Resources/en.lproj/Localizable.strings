@@ -1,2 +1,2 @@
-"plugin.MessagesSupport.title" = "Messages Support";
-"plugin.MessagesSupport.detail" = "Fixes the issue where the Messages app is automatically uninstalled.";
+"plugin.MessagesSupport.title" = "Prevent Messages Removal";
+"plugin.MessagesSupport.detail" = "Fixes the severe battery drain caused by Messages disappearing after pairing watches on watchOS 11.4 and later.";

@@ -241,7 +241,7 @@
 "about.language.button" = "切换语言";
 
 "plugin.help.section.title" = "详细说明";
-"plugin.help.section.footer" = "先看用途说明，再展开技术细节查看它会注入哪些 bundle 和进程。";
+"plugin.help.section.footer" = "展开后会同时显示用途说明、常见场景，以及它会注入哪些 bundle 和进程。";
 "plugin.help.action.show" = "查看详细说明";
 "plugin.help.action.hide" = "收起详细说明";
 "plugin.help.summary.title" = "这项修复会做什么";
@@ -249,8 +249,6 @@
 "plugin.help.requirements.title" = "系统与设备要求";
 "plugin.help.targets.bundles" = "会注入的 Bundle";
 "plugin.help.targets.executables" = "会注入的进程";
-"plugin.help.technical.show" = "展开技术细节";
-"plugin.help.technical.hide" = "收起技术细节";
 "plugin.help.empty" = "这个插件暂时还没有补充的说明文案。";
 "plugin.help.requirement.ios.minimum" = "需要 iOS %@ 或更高版本。";
 "plugin.help.requirement.ios.maximum" = "设计目标是低于 iOS %@ 的系统版本。";
@@ -259,74 +257,74 @@
 "plugin.help.requirement.osRestrictions" = "这项修复只适用于特定的 iOS 与 watchOS 版本组合。";
 
 "plugin.help.APSSupport.tagline" = "补强信息、对讲机等消息服务依赖的在线状态回报链路。";
-"plugin.help.APSSupport.summary" = "这个修复会在 apsd 收到手表侧的 presence 事件后，主动把代理已连通的状态回报给 IDS 代理管理器。它针对的是“手表其实已经在线，但消息链路还被系统判断成离线”的情况。";
-"plugin.help.APSSupport.example.1" = "如果 Apple Watch 明明已经连着手机，但“信息”一直转圈、对讲机列表不刷新，这个修复补的就是那段连通状态上报。";
-"plugin.help.APSSupport.example.2" = "它主要是在修状态判断，不会直接替你重配 Apple ID、推送令牌或网络设置。";
+"plugin.help.APSSupport.summary" = "这个修复只动 apsd 里一段和在线状态有关的逻辑。apsd 收到手表侧的 presence 事件后，WatchFix 会额外检查 APS 代理当前是否真的已经在可用接口上连通；如果条件成立，就主动调用 IDS 代理管理器，把“代理已经连通”的状态继续上报给上层消息服务。它修的是“手表其实已经在线，但系统没有把在线状态继续传上去，结果消息链路还被当成离线”的缺口。";
+"plugin.help.APSSupport.example.1" = "如果 Apple Watch 明明已经连着手机，但“信息”持续转圈、对讲机列表不刷新，或者依赖在线状态的消息服务总像没连上一样，这个修复补的就是这一步连通状态上报。";
+"plugin.help.APSSupport.example.2" = "它修的是状态回报，不会替你重新登录 Apple ID，也不会修复推送令牌、网络环境或 IDS 账号本身的异常。";
 
-"plugin.help.MessagesSupport.tagline" = "恢复 Messages 送装时使用的系统 App 映射。";
-"plugin.help.MessagesSupport.summary" = "这个修复只补 appconduitd 里 Messages 对应的系统 App 映射，把手表端的“信息”作为可安装系统 App 重新识别出来。它是之前混在 Apps Support 里的那一小块。";
-"plugin.help.MessagesSupport.example.1" = "当“信息”在手表 App 列表里消失，或在下发时被当成未映射的系统 App 时，用这个修复。";
-"plugin.help.MessagesSupport.example.2" = "它本身不会修改 watchOS 的版本校验。";
+"plugin.help.MessagesSupport.tagline" = "避免配对后“信息”消失，顺带压住由此引发的异常耗电。";
+"plugin.help.MessagesSupport.summary" = "这项修复是从原项目的 AppsSupport 里拆分出来的 Messages 专项补丁。代码只在 appconduitd 里补回 `com.apple.MobileSMS` 的 supplemental system app 映射，让 watchOS 11.4 及之后的手表在配对后不会把“信息”识别丢失。对用户来说，最直接的结果就是避免“信息”应用消失，以及由此带出的异常唤醒和巨大耗电问题。";
+"plugin.help.MessagesSupport.example.1" = "如果手表在配对完成后“信息”突然消失，或者系统把它当成未映射的系统 App，这项修复就是针对这个问题。";
+"plugin.help.MessagesSupport.example.2" = "它现在已经从原项目的 AppsSupport 单独拆出来，目的就是把“信息”消失这件事和普通应用安装兼容问题分开，避免理解混淆。";
 
 "plugin.help.AppsSupport.tagline" = "放宽手表 App 安装校验，让更多 App 还能继续下发到较新的手表。";
-"plugin.help.AppsSupport.summary" = "这个修复只调整 Watch bundle 的版本校验，让目标 watchOS 被当成更高兼容版本，从而绕过“手表系统太新，当前 App 不适用”的限制。";
-"plugin.help.AppsSupport.example.1" = "常见现象是 iPhone 端能看到手表 App，但安装按钮灰掉，或者系统直接说当前 watchOS 不支持安装。";
-"plugin.help.AppsSupport.example.2" = "它不会凭空生成不存在的 App，只是让本来就能装的包更容易通过版本门槛。";
+"plugin.help.AppsSupport.summary" = "这个修复只改安装阶段的 Watch bundle 版本校验。它 hook `MIEmbeddedWatchBundle`，把安装器拿来判断兼容性的“当前 watchOS 版本”伪装成一个足够新的版本，再据此让系统继续把目标 bundle 视为适用于当前手表。它解决的是 iPhone 端在真正开始下发前，就先因为“这块表系统太新”而把安装拦掉的问题。";
+"plugin.help.AppsSupport.example.1" = "常见现象是 iPhone 端明明能看到某个手表 App，但安装按钮是灰的，或者系统直接提示当前 watchOS 不支持安装这个 App。";
+"plugin.help.AppsSupport.example.2" = "它不会凭空生成原本就没有提供 watch 组件的 App，也不负责应用安装之外的系统兼容问题；它只负责放宽安装器这一层的版本门槛。";
 
 "plugin.help.LayoutSupport.tagline" = "修正较新 watchOS 的图标布局同步，让主屏排列还能写回手表。";
-"plugin.help.LayoutSupport.summary" = "代码会直接改写 com.apple.Carousel 里的 IconPositions 数据，把新版六边形布局重排成旧主机仍能接受的 3-4-3 结构，并主动触发 nano domain 同步。";
-"plugin.help.LayoutSupport.example.1" = "如果你在 iPhone 上调整手表主屏图标顺序后，手表端布局回弹、打乱或根本保存不住，通常就和这一层兼容有关。";
-"plugin.help.LayoutSupport.example.2" = "它更像是在修布局数据结构，不是额外给你做一个全新的排版编辑器。";
+"plugin.help.LayoutSupport.summary" = "这个修复直接接管 Watch App 里图标排列的读写。读取时，它会把 `com.apple.Carousel` 里保存的 `IconPositions` 重建成旧主机还能处理的图结构；如果节点位置已经不连续、超出旧版可识别的垂直 3-4-3 区域，或者完整性检查失败，它还会重新压紧、纠正并整理这份布局。保存时，它会把排列重新序列化成旧主机可接受的 3-4-3 结构，并主动同步 nano domain，让你在 iPhone 上改过的主屏布局真正写回手表。";
+"plugin.help.LayoutSupport.example.1" = "如果你在 iPhone 上调整手表主屏图标顺序后，手表端布局会回弹、打乱、缺图标，或者根本保存不住，通常就是这一层布局数据结构不兼容。";
+"plugin.help.LayoutSupport.example.2" = "它修的是布局数据的读取、纠正和回写，不是额外给你做一个新的图标编辑器，也不会改变 watchOS 自己的主屏样式。";
 
 "plugin.help.LockdownModeSupport.tagline" = "把锁定模式对应的服务声明补回旧版 iPhone，让手表侧相关入口重新出现。";
-"plugin.help.LockdownModeSupport.summary" = "当 identityservicesd 载入服务字典时，这个修复会把 Lockdown Mode 那条定义补进去。它修的是“手表知道有这个功能，但手机侧服务表里根本没登记”的兼容缺口。";
-"plugin.help.LockdownModeSupport.example.1" = "较新的手表配到较旧 iPhone 上时，锁定模式联动项可能完全不显示。";
-"plugin.help.LockdownModeSupport.example.2" = "它主要补的是服务注册，不代表能绕过所有与锁定模式有关的系统限制。";
+"plugin.help.LockdownModeSupport.summary" = "这个修复只在较旧 iPhone 上补一条缺失的 IDS 服务声明。`identityservicesd` 载入服务字典时，WatchFix 会检查是否已经存在 `com.apple.private.alloy.lockdownmode`；如果没有，就把对应的服务配置动态追加进去。这样较新的手表在和较旧主机联动时，至少能在手机侧看到这项服务，而不是因为服务表里压根没登记而直接缺席。";
+"plugin.help.LockdownModeSupport.example.1" = "较新的手表配到较旧 iPhone 上时，锁定模式相关入口可能完全不显示，或者手机端根本没有对应的联动项。";
+"plugin.help.LockdownModeSupport.example.2" = "它补的是服务注册入口，不是完整重做锁定模式实现；如果后续还有别的系统限制，这项修复本身不会一并绕过。";
 
 "plugin.help.WatchUpdateBlock.tagline" = "屏蔽 Watch App 里的手表系统更新扫描，让当前版本不再被提示升级。";
-"plugin.help.WatchUpdateBlock.summary" = "这个修复会拦截 Bridge 侧的软件更新扫描链路和底层更新客户端回调，强制把结果伪装成“没有可用更新”。它就是用来隐藏 Watch 应用里的升级提示。";
-"plugin.help.WatchUpdateBlock.example.1" = "如果 Watch App 总是在 iPhone 上提示你更新手表系统，而你不想让它显示，这个修复就对准这个路径。";
-"plugin.help.WatchUpdateBlock.example.2" = "它只会压住扫描和结果回报，不会真的改动手表本身。";
+"plugin.help.WatchUpdateBlock.summary" = "这个修复会同时拦截 Watch App 前台和底层软件更新服务两条路径。对 `SUBManager`，它直接阻止扫描并立即回调“没找到更新”；对 `SUManagerClient` 及相关完成回调，它会把扫描状态、扫描结果、找到的 update 对象统一改写成“没有可用更新”。所以无论是界面主动触发，还是后台更新服务回报结果，Watch App 最终看到的都会是当前没有可升级的 watchOS。";
+"plugin.help.WatchUpdateBlock.example.1" = "如果 Watch App 总是在 iPhone 上提示你更新手表系统，而且每次进软件更新页都能扫出新版本，这项修复就是专门压这条链路的。";
+"plugin.help.WatchUpdateBlock.example.2" = "它不会真的修改手表系统版本，也不会替你删除已经下载的更新包；它做的是把“发现更新”和“展示更新”这一层统一压住。";
 
 "plugin.help.MediaSyncSupport.tagline" = "修复离线音乐与播放列表同步依赖的 Keep Local 请求链路。";
-"plugin.help.MediaSyncSupport.summary" = "这个插件会在 Bridge 和 NanoMusicSync 里重建兼容的 Keep Local 同步流程。原本系统如果不能把专辑或播放列表正确下发到手表，它会改用 IDS 消息和 protobuf 负载来推动同步。";
-"plugin.help.MediaSyncSupport.example.1" = "常见情况是你点了“下载到 Apple Watch”，界面看起来开始了，但手表上始终没有离线歌曲。";
-"plugin.help.MediaSyncSupport.example.2" = "它修的是兼容与传输层，不会替代 Apple Music 本身的订阅或授权检查。";
+"plugin.help.MediaSyncSupport.summary" = "这个修复主要补的是旧主机缺失的 Keep Local 同步协议。对于需要走新版同步方式的手表，WatchFix 会拦截专辑和播放列表的 pin / unpin 请求，重新构造 multiverse 标识、容器类型、同步策略等 protobuf 负载，再通过 `com.apple.private.alloy.nanomediasync` 这条 IDS 服务发给手表。收到响应后，系统才继续完成后续状态更新。它修的是“界面允许下载，但离线音乐始终没有真正下发到表上”的那段传输链路。";
+"plugin.help.MediaSyncSupport.example.1" = "常见情况是你点了“下载到 Apple Watch”后界面像是开始了，但手表上始终没有专辑、播放列表或离线歌曲；取消下载时也可能没有正确反应。";
+"plugin.help.MediaSyncSupport.example.2" = "它不会绕过 Apple Music 的订阅、DRM、地区或账号授权限制；如果 IDS 路由本身不可用，它最多只能提示这条同步服务不可达。";
 
 "plugin.help.MobileDataSupport.tagline" = "修复蜂窝能力判断，让蜂窝版 Apple Watch 的开通入口重新出现。";
-"plugin.help.MobileDataSupport.summary" = "插件会拦截 CommCenter 的校验流程，结合已配对手表的 productType、watchOS 与蜂窝 capability，重写主机读到的运营商配置结果，解决系统误判“这块表不支持蜂窝”的情况。";
-"plugin.help.MobileDataSupport.example.1" = "如果手表明明是蜂窝版，但 iPhone 里始终没有“蜂窝网络”设置页，这个修复最直接。";
-"plugin.help.MobileDataSupport.example.2" = "它只在系统误判设备能力时有帮助，不会替你开通运营商套餐。";
+"plugin.help.MobileDataSupport.summary" = "这个修复并不是简单地强行返回“支持蜂窝”。它会在 CommCenter 解析蜂窝开通相关配置和注册验证回调时，读取当前校验上下文里的 `productType` 与 watchOS 版本，再去已配对设备列表里查找真正匹配的那块表，并确认它是否声明了蜂窝 capability。只有当设备型号、系统版本和 capability 都对得上时，才会把这次校验结果修成支持，从而把原本被误判隐藏的蜂窝设置入口放出来。";
+"plugin.help.MobileDataSupport.example.1" = "如果手表明明是蜂窝版，但 iPhone 里始终没有“蜂窝网络”设置页，或者系统像把它当成 GPS 版一样处理，这项修复最直接。";
+"plugin.help.MobileDataSupport.example.2" = "它只修系统误判设备能力这一层，不会替你开通运营商 eSIM，也不会绕过运营商本身的地区、套餐或账户限制。";
 
 "plugin.help.NanoMapsSupport.tagline" = "修复地图路线预览消息结构，让导航还能正常发到手表。";
-"plugin.help.NanoMapsSupport.summary" = "它会改写 nanomapscd 收到的预览导航消息，把旧主机不认识的 waypoint 列表拆成起点和终点字段，并强制读取完整的 GeoMapItem 数据后再继续下发。";
-"plugin.help.NanoMapsSupport.example.1" = "典型现象是在手机上发起路线后，手表端完全收不到导航预览，或者只显示一半信息。";
-"plugin.help.NanoMapsSupport.example.2" = "这个修复主要解决消息格式兼容，不会改变 Apple 地图本身算出来的路线。";
+"plugin.help.NanoMapsSupport.summary" = "这个修复只针对旧主机看不懂的新导航预览消息格式。`nanomapscd` 收到预览导航消息时，WatchFix 会检查 waypoint 列表；如果旧系统不认识这种多点结构，它会把至少三个元素的 waypoint 列表拆回旧格式使用的起点与终点字段。同时在 waypoint 对象写入 `GeoMapItem` 时强制读取完整数据，避免只拿到半截对象就继续往下传。它修的是导航预览消息结构不兼容，而不是路线计算本身。";
+"plugin.help.NanoMapsSupport.example.1" = "典型现象是在手机上发起路线后，手表端完全收不到导航预览、只显示一半信息，或者起终点结构明显不完整。";
+"plugin.help.NanoMapsSupport.example.2" = "如果问题是 Apple 地图算不出路线、定位失败或网络不可用，这项修复不会解决。";
 
 "plugin.help.PairingCompatibility.tagline" = "补齐配对链路里的版本、注册表、BLE、IDS、PassKit 和宿主版本伪装钩子。";
-"plugin.help.PairingCompatibility.summary" = "这是 WatchFix 里最核心的一组修复。它会扩展 NanoRegistry 的配对兼容范围，同时在多个系统进程里打开 framework、蓝牙、IDS、模拟 iOS 版本、PassKit 等钩子，让旧 iPhone 还能和较新的手表完成配对并维持后续通信。";
-"plugin.help.PairingCompatibility.example.1" = "如果你已经扫到了配对码，但总卡在“无法配对”、初始化失败，或者配对后立刻掉线，通常都要先看这一项。";
-"plugin.help.PairingCompatibility.example.2" = "因为它会影响很多服务，所以安装或改配置后通常需要重启相关进程，效果才会稳定。";
+"plugin.help.PairingCompatibility.summary" = "这是整个项目里覆盖面最大的一组兼容修复，而且它本身还是可配置的。代码会先读取你在插件设置里保存的最小/最大兼容版本、Hello 阈值和各子模块开关，然后分层注入到配对相关进程：一层改 `NRPairingDaemon` 和 `NRPairingCompatibilityVersionInfo` 的配对版本范围；一层强制 `NRDevice` 与 `NRPairedDeviceRegistry` 把设备视为可兼容、可通信；一层改 IDS Hello 和服务字典里的最小兼容版本，并把 IDS 账号状态强制视为可用；一层给若干 watch 相关进程伪装 iOS 版本与 `SystemVersion.plist`；另外还包含 PassKit 远端安全元件可用性放开，以及拦截蓝牙 `NearbyActionV2Type = 0x00` 以避免额外耗电。它不是单点修补，而是把“配对前检查、配对中握手、配对后基础服务通信”几段一起补齐。";
+"plugin.help.PairingCompatibility.example.1" = "如果你已经能扫配对码，但会卡在初始化、提示不兼容、配对后马上断开，或者 Wallet / 消息 / 基础服务在配对后仍然表现得像主机过旧，这一项通常都在链路里。";
+"plugin.help.PairingCompatibility.example.2" = "因为它同时影响 `nanoregistryd`、`identityservicesd`、`bluetoothd`、`passd`、`Bridge` 等多个进程，修改配置后通常需要重启相关服务；另外它也不是万能兼容层，功能是否最终正常还取决于对应链路有没有被这组 hook 覆盖到。";
 
 "plugin.help.PhotoLibrarySupport.tagline" = "修复照片同步依赖的消息、快照与资源传输链路。";
-"plugin.help.PhotoLibrarySupport.summary" = "插件在 nptocompaniond 里重建了旧系统缺失的照片同步流程：会发送同步信号、回应快照请求、按需导出照片资源，并在需要时把返回的图片重新导入到手机侧图库。";
-"plugin.help.PhotoLibrarySupport.example.1" = "如果你在 iPhone 上选好了同步相册，但手表图库始终不更新，或者照片表盘一直空白，这个修复最相关。";
-"plugin.help.PhotoLibrarySupport.example.2" = "它主要是在修传输和 protobuf 交互，不会替你决定 Apple Photos 应该挑哪几张照片。";
+"plugin.help.PhotoLibrarySupport.summary" = "这个修复在 `nptocompaniond` 里重建了旧系统缺失的整套照片同步交互。它会为高版本手表建立自己的同步控制器，先根据当前同步请求生成哈希并主动发送 photo sync signal；收到手表的 snapshot 请求后，再把图库与目标相册列表重新编码回 protobuf 响应；收到具体资源请求时，会按 UUID 找到对应照片，导出临时资源并通过 IDS 回传给手表。反过来，如果手表侧回传了照片资源或旧版 Jupiter 入站文件，它还会在手机侧执行导入。也就是说，它修的不只是“发照片”这一点，而是把同步信号、快照、按需资源传输、回传导入这几步一起补回来了。";
+"plugin.help.PhotoLibrarySupport.example.1" = "如果你在 iPhone 上已经选了同步相册，但手表图库长期不更新、照片表盘空白，或者同步过程看起来开始了却始终不落地，通常都和这条链路有关。";
+"plugin.help.PhotoLibrarySupport.example.2" = "它不会替你决定照片筛选逻辑，也不会扩大 Photos 本身的权限；如果照片访问权限、存储空间或系统照片库状态异常，仍然会受影响。";
 
 "plugin.help.PingMyWatchControlCenter.tagline" = "在控制中心加入“呼叫 Apple Watch”，并用 helper 进程去真正发起响铃请求。";
-"plugin.help.PingMyWatchControlCenter.summary" = "这个插件会安装一个控制中心模块和辅助执行文件。点下模块后，代码会先确认当前活动手表支持 ping capability，再拉起 helper 去真正发送响铃命令。";
-"plugin.help.PingMyWatchControlCenter.example.1" = "适合手表就在附近但一时找不到位置时，直接从 iPhone 控制中心让它发声。";
-"plugin.help.PingMyWatchControlCenter.example.2" = "如果当前手表本身不支持 ping，这个模块会明确提示不支持，而不是假装成功。";
+"plugin.help.PingMyWatchControlCenter.summary" = "这个插件不只是加一个按钮。它会安装一个控制中心模块，并在点按时先去 NanoRegistry 里找到当前活动手表，确认这块表是否声明了“查找 / 响铃” capability；通过检查后，再启动独立的 helper 可执行文件，由 helper 调用 `NFMWhereIsMyCompanionConnection` 的响铃接口真正向手表发请求。模块本身还会处理图标动画、进行中的状态，以及“不支持”和“无法连接”两类提示。";
+"plugin.help.PingMyWatchControlCenter.example.1" = "适合手表就在附近但一时找不到位置时，直接从 iPhone 控制中心让它发声，不用再绕进“查找”或别的入口。";
+"plugin.help.PingMyWatchControlCenter.example.2" = "如果当前活动手表没有这项 capability，或者 helper 无法把请求发出去，它会明确报不支持或不可达，而不是假装已经让手表响铃。";
 
 "plugin.help.WatchAppSupport.tagline" = "修复手表型号资源、尺寸材质映射、资源拉取和部分配对界面。";
-"plugin.help.WatchAppSupport.summary" = "这一组 hook 会同时改 Bridge 与 SharingViewService：补产品型号到尺寸/材质的映射、修远程图片与资源拉取、修配对流程中的进度视图，以及软件更新和无法配对等提示界面。";
-"plugin.help.WatchAppSupport.example.1" = "常见现象是 Watch App 里手表图片显示不出来、型号名称不对、进度界面排版异常，或者配对页提示残缺。";
-"plugin.help.WatchAppSupport.example.2" = "它更偏向资源和界面兼容修复，不是直接改配对范围的那一层。";
+"plugin.help.WatchAppSupport.summary" = "这一组修复覆盖的是 Watch App 里最容易碎掉的资源与界面兼容层，而且不止一处 hook。它会先补一批函数级映射，让新型号手表的 `productType` 仍能被旧主机解析成可用的尺寸、材质、显示名称和资源字符串；然后修 `BPSRemoteImageView` 的回退图片、`PBBridgeWatchAttributeController` 的资源选择、特殊尺寸的屏幕图尺寸和材质覆盖；配对流程里还会在拉取 advertising name 对应资源失败时主动拉默认材质资源，修 `PBBridgeProgressView` 和设备同步视图里的尺寸/图片问题；最后再改“更新不受支持”“无法配对”等提示框文案，避免旧系统直接显示不完整或误导性的界面。它本质上是在把旧版 Watch App 不认识的新手表资源、尺寸和部分流程页面补到至少能正常显示和继续操作的程度。";
+"plugin.help.WatchAppSupport.example.1" = "常见现象包括手表图片完全不显示、显示成错误外观、尺寸名称不对、配对进度视图排版错乱、资源一直拉不下来，或者升级/配对失败弹窗内容明显不对。";
+"plugin.help.WatchAppSupport.example.2" = "它主要修的是 Bridge 与 SharingViewService 这一层的资源和 UI 兼容，不会直接替你放宽配对版本范围；如果根因是配对校验失败，还要结合配对兼容修复一起看。";
 
 "plugin.help.WatchFaceSupport.tagline" = "让 iPhone 至少能识别和展示较新 watchOS 表盘的占位信息。";
-"plugin.help.WatchFaceSupport.summary" = "插件会在 Bridge、NTKFaceSnapshotService 和 nanotimekitcompaniond 之间塞入一个占位表盘 bundle。较新的表盘如果旧主机解不出来，就会被转成可枚举、可展示、可保留配置的 stub 对象，而不是直接丢失。";
-"plugin.help.WatchFaceSupport.example.1" = "如果手表已经换上新表盘，但 iPhone 端只显示空白、无效表盘，或者完全进不了编辑页，这个修复会很关键。";
-"plugin.help.WatchFaceSupport.example.2" = "它主要是在做兼容展示和保底占位，不代表旧版 iPhone 能完整编辑所有新表盘特性。";
+"plugin.help.WatchFaceSupport.summary" = "这个修复的核心思路不是“让旧 iPhone 真正学会所有新表盘”，而是给它一层不会把新表盘直接丢掉的占位兼容。代码会注入一个 `WFSStubFaces` 占位 bundle，并在 `NTKFace`、`NTKFaceBundleManager`、`NTKFaceSnapshotService` 和 `nanotimekitcompaniond` 相关链路里接管新表盘的解析、查找和枚举：如果旧主机无法根据 JSON 或 bundle identifier 还原真实表盘，就改为生成一个 stub face，把原始 JSON 配置继续保存在 `StubJsonBacking` 里，同时提供可显示的标题、说明、缩略图占位和 gallery 项。这样 iPhone 端至少还能列出这个表盘、保留它的配置、显示一个明确的“当前 iOS 不支持”占位，而不是直接变成空白或彻底丢失。";
+"plugin.help.WatchFaceSupport.example.1" = "如果手表已经切到较新的表盘，但 iPhone 上只看到空白卡片、无效表盘、迁移后表盘消失，或者根本进不了相关列表，这项修复就是用来保底承接这类情况的。";
+"plugin.help.WatchFaceSupport.example.2" = "它解决的是“能识别、能展示、能保留配置”的底线兼容，不代表旧版 Watch App 能完整编辑新表盘里的每一种样式、复杂功能或专属配置项。";
 
 "plugin.tech.bundle.com.apple.Bridge" = "Bridge（Watch App 主界面）";
 "plugin.tech.bundle.com.apple.InstalledContentLibrary" = "InstalledContentLibrary（手表 App 清单库）";

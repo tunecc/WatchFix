@@ -1,2 +1,2 @@
-"plugin.MessagesSupport.title" = "訊息支援";
-"plugin.MessagesSupport.detail" = "修復「訊息」應用程式被自動卸載的問題。";
+"plugin.MessagesSupport.title" = "避免訊息卸載";
+"plugin.MessagesSupport.detail" = "修復 watchOS 11.4 及之後配對後「訊息」消失並引發巨大耗電的問題。";

@@ -1,2 +1,2 @@
-"plugin.MessagesSupport.title" = "信息支持";
-"plugin.MessagesSupport.detail" = "修复“信息”应用被自动卸载的问题。";
+"plugin.MessagesSupport.title" = "避免信息卸载";
+"plugin.MessagesSupport.detail" = "修复 watchOS 11.4 及之后配对后“信息”消失并引发巨大耗电的问题。";

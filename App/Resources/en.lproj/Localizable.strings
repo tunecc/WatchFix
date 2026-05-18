@@ -241,7 +241,7 @@
 "about.language.button" = "Switch Language";
 
 "plugin.help.section.title" = "Detailed Notes";
-"plugin.help.section.footer" = "Open the notes for a friendlier explanation, then expand technical details to see injected bundles and processes.";
+"plugin.help.section.footer" = "Opening this section shows the explanation, typical situations, and the injected bundles and processes together.";
 "plugin.help.action.show" = "Show Detailed Notes";
 "plugin.help.action.hide" = "Hide Detailed Notes";
 "plugin.help.summary.title" = "What This Fix Does";
@@ -249,8 +249,6 @@
 "plugin.help.requirements.title" = "System and Device Requirements";
 "plugin.help.targets.bundles" = "Injected Bundles";
 "plugin.help.targets.executables" = "Injected Processes";
-"plugin.help.technical.show" = "Show Technical Details";
-"plugin.help.technical.hide" = "Hide Technical Details";
 "plugin.help.empty" = "No additional notes are available for this plugin yet.";
 "plugin.help.requirement.ios.minimum" = "Requires iOS %@ or later.";
 "plugin.help.requirement.ios.maximum" = "Designed for iOS versions below %@.";
@@ -263,15 +261,15 @@
 "plugin.help.APSSupport.example.1" = "If Messages keeps spinning or Walkie-Talkie does not refresh even though the watch is paired and nearby, this fix is patching that connected-state path.";
 "plugin.help.APSSupport.example.2" = "It is mainly repairing state reporting. It does not reconfigure your Apple ID, push token, or network profile by itself.";
 
-"plugin.help.MessagesSupport.tagline" = "Restores the Messages system-app mapping used during app delivery.";
-"plugin.help.MessagesSupport.summary" = "This fix only patches appconduitd so the watch-side Messages bundle stays visible as an installable system app. It is the narrow Messages-specific half that was previously bundled into Apps Support.";
-"plugin.help.MessagesSupport.example.1" = "Use this when Messages disappears from the watch app list or gets treated like an unmapped system app during delivery.";
-"plugin.help.MessagesSupport.example.2" = "It does not change watchOS app version checks by itself.";
+"plugin.help.MessagesSupport.tagline" = "Prevents Messages from disappearing after pairing, and avoids the battery drain that follows.";
+"plugin.help.MessagesSupport.summary" = "This is the Messages-specific fix that was split out from the original AppsSupport. It only patches appconduitd by restoring the `com.apple.MobileSMS` supplemental system-app mapping, so watches on watchOS 11.4 and later do not lose Messages recognition after pairing. In practice, that prevents the Messages app from disappearing and avoids the severe battery drain that follows.";
+"plugin.help.MessagesSupport.example.1" = "Use this when Messages disappears after pairing, or when the system starts treating it as an unmapped system app on the watch side.";
+"plugin.help.MessagesSupport.example.2" = "It is now separated from the original AppsSupport so the Messages-disappearing issue is no longer mixed together with general watch app installation compatibility.";
 
 "plugin.help.AppsSupport.tagline" = "Relaxes watch app installation checks so more apps can still be delivered to newer watches.";
 "plugin.help.AppsSupport.summary" = "This fix only adjusts the watch-bundle validator so the target watchOS is treated as a higher compatible version. That helps older iPhones pass install-time checks that would otherwise reject a watch app as too new.";
 "plugin.help.AppsSupport.example.1" = "A common symptom is seeing the watch app on iPhone, but the install button stays disabled or the system says the app is not applicable to the current watchOS.";
-"plugin.help.AppsSupport.example.2" = "It does not create apps that were never shipped. It mainly helps already available apps clear version gating.";
+"plugin.help.AppsSupport.example.2" = "It does not create apps that were never shipped, and it does not cover system compatibility issues outside the install-time validator.";
 
 "plugin.help.LayoutSupport.tagline" = "Repairs newer watchOS icon-layout syncing so home-screen arrangements can still be written back.";
 "plugin.help.LayoutSupport.summary" = "The code rewrites com.apple.Carousel IconPositions data into a 3-4-3 structure that older hosts can still validate, then forces the nano-domain sync path to push the layout back to the watch.";
