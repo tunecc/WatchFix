@@ -218,7 +218,7 @@ main() {
   require_command xcrun
 
   mkdir -p "$BUILD_DIR" "$PACKAGE_DIR_ROOT" "$UNPACK_DIR" "$OUT_DIR"
-  rm -f "$OUT_DIR"/cn.fkj233.watchfix_*native-roothide*.deb
+  rm -f "$OUT_DIR"/cn.fkj233.watchfix.mod_*native-roothide*.deb
 
   local -a schemes=()
   while IFS= read -r scheme; do
