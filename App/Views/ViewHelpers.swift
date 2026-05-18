@@ -385,10 +385,16 @@ func WFMakePluginCard(
     )
     let titleLabel = WFMakeTextLabel(plugin.title, font: .preferredFont(forTextStyle: .headline))
     let detailLabel = WFMakeSecondaryLabel(plugin.detail)
+    titleLabel.numberOfLines = 0
+    detailLabel.numberOfLines = 0
 
     let textStack = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
     textStack.axis = .vertical
     textStack.spacing = 4
+    textStack.alignment = .fill
+    textStack.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+    textStack.setContentHuggingPriority(.defaultLow, for: .horizontal)
+    iconView.setContentHuggingPriority(.required, for: .horizontal)
 
     let actionButton = WFMakeActionButton(
         title: actionTitle ?? (plugin.available ? L("common.delete") : L("common.install")),
@@ -426,6 +432,7 @@ func WFMakePluginCard(
     buttonStack.alignment = .fill
     buttonStack.spacing = 8
     buttonStack.setContentHuggingPriority(.required, for: .horizontal)
+    buttonStack.setContentCompressionResistancePriority(.required, for: .horizontal)
 
     let rowStack = UIStackView(arrangedSubviews: [iconView, textStack, buttonStack])
     rowStack.axis = .horizontal
@@ -462,23 +469,32 @@ func WFMakePluginHeaderCard(plugin: PluginState) -> UIView {
         tintColor: .systemBlue
     )
     let titleLabel = WFMakeTextLabel(plugin.title, font: .preferredFont(forTextStyle: .headline))
-    let detailLabel = WFMakeSecondaryLabel(plugin.detail)
-    let textStack = UIStackView(arrangedSubviews: [titleLabel, detailLabel])
-    textStack.axis = .vertical
-    textStack.spacing = 4
+    titleLabel.numberOfLines = 0
+    titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+    titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+    iconView.setContentHuggingPriority(.required, for: .horizontal)
 
     let status = WFMakeStatusBadge(
         state: plugin.available ? .compatible : .unavailable,
         title: plugin.available ? L("plugin.configuration.status.installed") : L("plugin.configuration.status.notInstalled")
     )
     status.setContentHuggingPriority(.required, for: .horizontal)
+    status.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-    let rowStack = UIStackView(arrangedSubviews: [iconView, textStack, status])
+    let spacer = UIView()
+    spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+    spacer.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
+    let rowStack = UIStackView(arrangedSubviews: [iconView, titleLabel, spacer, status])
     rowStack.axis = .horizontal
     rowStack.alignment = .center
     rowStack.spacing = 12
 
-    var arrangedSubviews: [UIView] = [rowStack]
+    let detailLabel = WFMakeSecondaryLabel(plugin.detail)
+    detailLabel.numberOfLines = 0
+    detailLabel.font = .preferredFont(forTextStyle: .subheadline)
+
+    var arrangedSubviews: [UIView] = [rowStack, detailLabel]
     if let validationMessage = plugin.validationMessage {
         arrangedSubviews.append(WFMakeFootnoteLabel(validationMessage, color: plugin.validation.state == .compatible ? .secondaryLabel : .systemRed))
     }
