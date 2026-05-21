@@ -23,21 +23,26 @@ final class FeatureViewController: WFScrollStackViewController {
                 return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
             }
         let unavailablePlugins = store.plugins
-            .filter { !$0.available && !$0.isTool }
+            .filter { !$0.available && !$0.isTool && $0.canInstall }
+            .sorted { lhs, rhs in
+                lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
+            }
+        let unsupportedPlugins = store.plugins
+            .filter { !$0.available && !$0.canInstall }
             .sorted { lhs, rhs in
                 lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
             }
         let toolPlugins = store.plugins
-            .filter(\.isTool)
+            .filter { $0.isTool && ($0.available || $0.canInstall) }
             .sorted { lhs, rhs in
                 if lhs.available != rhs.available {
                     return lhs.available && !rhs.available
                 }
                 return lhs.title.localizedCaseInsensitiveCompare(rhs.title) == .orderedAscending
             }
-        let knownFixCount = installedPlugins.count + unavailablePlugins.count
+        let knownFixCount = installedPlugins.count + unavailablePlugins.count + unsupportedPlugins.filter { !$0.isTool }.count
         let installedPluginIDs = installedPlugins.map(\.id)
-        let installablePluginIDs = unavailablePlugins.filter(\.canInstall).map(\.id)
+        let installablePluginIDs = unavailablePlugins.map(\.id)
         let installedToolIDs = toolPlugins.filter(\.available).map(\.id)
         let installableToolIDs = toolPlugins.filter { !$0.available && $0.canInstall }.map(\.id)
         let isDeletingInstalledPlugins = installedPluginIDs.contains { store.isPluginBusy($0) }
@@ -46,25 +51,27 @@ final class FeatureViewController: WFScrollStackViewController {
         let isDeletingTools = installedToolIDs.contains { store.isPluginBusy($0) }
 
         var installedContents: [UIView] = [
-            WFMakeInfoCard(
+            WFMakeCompactInfoRow(
                 text: unavailablePlugins.isEmpty
                     ? LF("features.plugins.summary", installedPlugins.count, knownFixCount)
                     : [
                         LF("features.plugins.summary", installedPlugins.count, knownFixCount),
                         LF("features.plugins.unavailable.summary", unavailablePlugins.count),
-                    ].joined(separator: "\n")
+                    ].joined(separator: " "),
+                symbolName: "checkmark.circle"
             ),
         ]
 
         if !installedPluginIDs.isEmpty {
             installedContents.append(
-                WFMakeCard([
+                WFMakeActionRowCard([
                     WFMakeActionButton(
                         title: L("common.deleteAll"),
                         systemImage: "trash",
                         isPrimary: false,
                         isLoading: isDeletingInstalledPlugins,
                         isEnabled: !installedPluginIDs.isEmpty,
+                        buttonSize: .medium,
                         tintColor: .systemRed
                     ) { [weak self] in
                         self?.store.removePlugins(identifiers: installedPluginIDs)
@@ -90,19 +97,24 @@ final class FeatureViewController: WFScrollStackViewController {
         )
 
         if !unavailablePlugins.isEmpty {
-            var unavailableContents: [UIView] = []
-            unavailableContents.append(
-                WFMakeCard([
+            var unavailableContents: [UIView] = [
+                WFMakeCompactInfoRow(
+                    text: LF("features.plugins.unavailable.summary", unavailablePlugins.count),
+                    symbolName: "tray.and.arrow.down",
+                    tintColor: .systemOrange
+                ),
+                WFMakeActionRowCard([
                     WFMakeActionButton(
                         title: L("common.installAll"),
                         systemImage: "square.and.arrow.down",
                         isLoading: isInstallingUnavailablePlugins,
-                        isEnabled: !installablePluginIDs.isEmpty
+                        isEnabled: !installablePluginIDs.isEmpty,
+                        buttonSize: .medium
                     ) { [weak self] in
                         self?.store.installPlugins(identifiers: installablePluginIDs)
                     },
-                ])
-            )
+                ]),
+            ]
 
             unavailableContents.append(contentsOf: unavailablePlugins.map { plugin in
                 makePluginCard(for: plugin)
@@ -119,14 +131,15 @@ final class FeatureViewController: WFScrollStackViewController {
 
         if !toolPlugins.isEmpty {
             var toolContents: [UIView] = []
-            var toolActionButtons: [UIView] = []
+            var toolActionButtons: [UIButton] = []
             if !installableToolIDs.isEmpty {
                 toolActionButtons.append(
                     WFMakeActionButton(
                         title: L("common.installAll"),
                         systemImage: "square.and.arrow.down",
                         isLoading: isInstallingTools,
-                        isEnabled: !installableToolIDs.isEmpty
+                        isEnabled: !installableToolIDs.isEmpty,
+                        buttonSize: .medium
                     ) { [weak self] in
                         self?.store.installPlugins(identifiers: installableToolIDs)
                     }
@@ -140,6 +153,7 @@ final class FeatureViewController: WFScrollStackViewController {
                         isPrimary: false,
                         isLoading: isDeletingTools,
                         isEnabled: !installedToolIDs.isEmpty,
+                        buttonSize: .medium,
                         tintColor: .systemRed
                     ) { [weak self] in
                         self?.store.removePlugins(identifiers: installedToolIDs)
@@ -147,7 +161,7 @@ final class FeatureViewController: WFScrollStackViewController {
                 )
             }
             if !toolActionButtons.isEmpty {
-                toolContents.append(WFMakeCard(toolActionButtons))
+                toolContents.append(WFMakeActionRowCard(toolActionButtons))
             }
 
             toolContents.append(contentsOf: toolPlugins.map { plugin in
@@ -157,17 +171,58 @@ final class FeatureViewController: WFScrollStackViewController {
             contentStack.addArrangedSubview(
                 WFMakeSection(
                     title: L("features.tools.title"),
+                    footer: L("features.tools.footer"),
                     contents: toolContents
                 )
             )
         }
 
+        if !unsupportedPlugins.isEmpty {
+            var unsupportedContents: [UIView] = [
+                WFMakeCompactInfoRow(
+                    text: LF("features.plugins.unsupported.summary", unsupportedPlugins.count),
+                    symbolName: "exclamationmark.triangle",
+                    tintColor: .systemRed
+                ),
+            ]
+
+            unsupportedContents.append(contentsOf: unsupportedPlugins.map { plugin in
+                makePluginCard(
+                    for: plugin,
+                    actionTitle: L("features.plugins.unsupported.action"),
+                    systemImage: "nosign",
+                    isPrimary: false,
+                    tintColor: .systemGray,
+                    isActionEnabled: false
+                )
+            })
+
+            contentStack.addArrangedSubview(
+                WFMakeSection(
+                    title: L("features.plugins.unsupported.title"),
+                    footer: L("features.plugins.unsupported.footer"),
+                    contents: unsupportedContents
+                )
+            )
+        }
     }
 
-    private func makePluginCard(for plugin: PluginState) -> UIView {
+    private func makePluginCard(
+        for plugin: PluginState,
+        actionTitle: String? = nil,
+        systemImage: String? = nil,
+        isPrimary: Bool? = nil,
+        tintColor: UIColor? = nil,
+        isActionEnabled: Bool? = nil
+    ) -> UIView {
         return WFMakePluginCard(
             plugin: plugin,
             isBusy: store.isPluginBusy(plugin.id),
+            actionTitle: actionTitle,
+            systemImage: systemImage,
+            isPrimary: isPrimary,
+            tintColor: tintColor,
+            isActionEnabled: isActionEnabled,
             configurationTitle: L("features.plugins.details"),
             configurationSystemImage: "info.circle",
             isConfigurationEnabled: !store.isPluginBusy(plugin.id),

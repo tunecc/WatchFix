@@ -11,3 +11,6 @@ __pycache__/
 .build
 out
 AGENTS.md
+.vibeskills
+docs
+outputs

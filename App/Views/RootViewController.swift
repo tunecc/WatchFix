@@ -69,12 +69,7 @@ final class RootViewController: UITableViewController {
         applyLocalizedContent()
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "MenuCell")
         tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 84
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            barButtonSystemItem: .refresh,
-            target: self,
-            action: #selector(refreshTapped)
-        )
+        tableView.estimatedRowHeight = 82
         bindStore()
     }
 
@@ -84,8 +79,8 @@ final class RootViewController: UITableViewController {
         tableView.reloadData()
     }
 
-    @objc private func refreshTapped() {
-        store.refreshAll()
+    private func applyLocalizedContent() {
+        title = L("landing.title")
     }
 
     private func bindStore() {
@@ -98,8 +93,8 @@ final class RootViewController: UITableViewController {
             .store(in: &cancellables)
     }
 
-    private func applyLocalizedContent() {
-        title = L("landing.title")
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        1
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -107,24 +102,32 @@ final class RootViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        menuCell(for: indexPath)
+    }
+
+    private func menuCell(for indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MenuCell", for: indexPath)
         let screen = Screen(rawValue: indexPath.row) ?? .compatibility
         let item = screen.item
 
         var content = UIListContentConfiguration.subtitleCell()
         content.text = item.title
-        content.secondaryText = detail(for: screen)
+        content.secondaryText = menuDetail(for: screen)
+        content.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 12)
+        content.textProperties.font = .preferredFont(forTextStyle: .headline)
+        content.secondaryTextProperties.font = .preferredFont(forTextStyle: .subheadline)
+        content.secondaryTextProperties.color = .secondaryLabel
         content.secondaryTextProperties.numberOfLines = 0
         content.image = UIImage(systemName: item.symbolName)
         content.imageProperties.tintColor = view.tintColor
         cell.contentConfiguration = content
         cell.accessoryType = .disclosureIndicator
+        cell.selectionStyle = .default
         return cell
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-
         let screen = Screen(rawValue: indexPath.row) ?? .compatibility
         let controller: UIViewController
         switch screen {
@@ -145,14 +148,14 @@ final class RootViewController: UITableViewController {
         navigationController?.pushViewController(controller, animated: true)
     }
 
-    private func detail(for screen: Screen) -> String {
+    private func menuDetail(for screen: Screen) -> String {
         switch screen {
         case .compatibility:
             return compatibilityDetail()
         case .features:
-            return featuresDetail()
+            return L("landing.features.detail")
         case .restart:
-            return restartDetail()
+            return L("landing.restart.detail")
         case .logs:
             return logsDetail()
         case .debug:
@@ -162,46 +165,27 @@ final class RootViewController: UITableViewController {
         }
     }
 
+    private func aboutDetail() -> String {
+        L("landing.about.detail")
+    }
+
+    private func debugDetail() -> String {
+        L("landing.debug.detail")
+    }
+
     private func compatibilityDetail() -> String {
+        if let report = store.currentReport, report.hasActiveWatch {
+            if let watchOSVersion = report.watchOSVersion {
+                return LF("landing.compatibility.status.watchVersion", report.watchName, watchOSVersion)
+            }
+            return LF("landing.compatibility.status.watch", report.watchName)
+        }
+
         if store.isRefreshingCompatibility {
             return L("landing.compatibility.status.loading")
         }
 
-        guard let report = store.currentReport else {
-            return L("landing.compatibility.status.empty")
-        }
-
-        if let watchOSVersion = report.watchOSVersion {
-            return LF("landing.compatibility.status.watchVersion", report.watchName, watchOSVersion, report.state.title)
-        }
-
-        return LF("landing.compatibility.status.watch", report.watchName, report.state.title)
-    }
-
-    private func featuresDetail() -> String {
-        let installedCount = store.plugins.filter { $0.available && !$0.isTool }.count
-        let knownFixCount = store.plugins.filter { !$0.isTool }.count
-        return LF("landing.features.status.plugins", installedCount, knownFixCount)
-    }
-
-    private func restartDetail() -> String {
-        if store.isRestartingWatch {
-            return L("landing.restart.status.restartingWatch")
-        }
-
-        if store.isRestartingServices {
-            return L("landing.restart.status.restartingServices")
-        }
-
-        if store.isRefreshingCompatibility {
-            return L("landing.restart.status.loading")
-        }
-
-        guard let report = store.currentReport, report.hasActiveWatch else {
-            return L("landing.restart.status.unavailable")
-        }
-
-        return LF("landing.restart.status.ready", report.watchName)
+        return L("landing.compatibility.status.empty")
     }
 
     private func logsDetail() -> String {
@@ -209,20 +193,8 @@ final class RootViewController: UITableViewController {
             return L("landing.logs.status.loading")
         }
 
-        let statusText = store.isPluginLoggingEnabled
+        return store.isPluginLoggingEnabled
             ? L("landing.logs.status.enabled")
             : L("landing.logs.status.disabled")
-        let countText = store.pluginLogs.isEmpty
-            ? L("landing.logs.status.empty")
-            : LF("landing.logs.status.count", store.pluginLogs.count)
-        return [statusText, countText].joined(separator: "\n")
-    }
-
-    private func aboutDetail() -> String {
-        L("landing.about.detail")
-    }
-
-    private func debugDetail() -> String {
-        L("landing.debug.detail")
     }
 }

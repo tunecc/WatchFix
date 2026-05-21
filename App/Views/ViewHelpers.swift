@@ -1,6 +1,8 @@
 import UIKit
 
-private let WFPluginCardButtonWidth: CGFloat = 124
+private let WFCardCornerRadius: CGFloat = 14
+private let WFCardPadding: CGFloat = 14
+private let WFPluginCardButtonWidth: CGFloat = 108
 
 struct WFCardReferenceItem {
     let title: String
@@ -10,7 +12,7 @@ struct WFCardReferenceItem {
 func WFMakeSection(title: String, footer: String? = nil, contents: [UIView]) -> UIView {
     let stack = UIStackView()
     stack.axis = .vertical
-    stack.spacing = 10
+    stack.spacing = 8
 
     let titleLabel = WFMakeTextLabel(title, font: .preferredFont(forTextStyle: .headline))
     stack.addArrangedSubview(titleLabel)
@@ -32,24 +34,61 @@ func WFMakeCard(_ arrangedSubviews: [UIView], spacing: CGFloat = 12) -> UIView {
 
     let container = UIView()
     container.backgroundColor = .secondarySystemGroupedBackground
-    container.layer.cornerRadius = 18
+    container.layer.cornerRadius = WFCardCornerRadius
     container.layer.cornerCurve = .continuous
     container.layer.borderWidth = 1 / UIScreen.main.scale
     container.layer.borderColor = UIColor.separator.withAlphaComponent(0.08).cgColor
     container.addSubview(stack)
 
     NSLayoutConstraint.activate([
-        stack.topAnchor.constraint(equalTo: container.topAnchor, constant: 16),
-        stack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
-        stack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
-        stack.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -16),
+        stack.topAnchor.constraint(equalTo: container.topAnchor, constant: WFCardPadding),
+        stack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: WFCardPadding),
+        stack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -WFCardPadding),
+        stack.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -WFCardPadding),
     ])
 
     return container
 }
 
+func WFMakeCompactInfoRow(text: String, symbolName: String? = nil, tintColor: UIColor = .secondaryLabel) -> UIView {
+    var arrangedSubviews: [UIView] = []
+    if let symbolName {
+        let imageView = UIImageView(image: UIImage(systemName: symbolName))
+        imageView.tintColor = tintColor
+        imageView.contentMode = .scaleAspectFit
+        imageView.setContentHuggingPriority(.required, for: .horizontal)
+        imageView.setContentCompressionResistancePriority(.required, for: .horizontal)
+        arrangedSubviews.append(imageView)
+    }
+
+    let label = WFMakeFootnoteLabel(text, color: tintColor)
+    label.numberOfLines = 0
+    arrangedSubviews.append(label)
+
+    let stack = UIStackView(arrangedSubviews: arrangedSubviews)
+    stack.axis = .horizontal
+    stack.alignment = .top
+    stack.spacing = 8
+    return stack
+}
+
 func WFMakeInfoCard(text: String) -> UIView {
-    WFMakeCard([WFMakeSecondaryLabel(text)])
+    WFMakeCard([WFMakeReadableBodyLabel(text)])
+}
+
+func WFMakeActionRowCard(_ buttons: [UIButton]) -> UIView {
+    let stack = UIStackView(arrangedSubviews: buttons)
+    stack.axis = .horizontal
+    stack.alignment = .fill
+    stack.distribution = .fillEqually
+    stack.spacing = 10
+
+    buttons.forEach { button in
+        button.titleLabel?.adjustsFontSizeToFitWidth = true
+        button.titleLabel?.minimumScaleFactor = 0.82
+    }
+
+    return WFMakeCard([stack], spacing: 0)
 }
 
 func WFMakeFeatureSummaryCard(
@@ -153,7 +192,7 @@ func WFMakeActionButton(
 ) -> UIButton {
     var configuration = isPrimary ? UIButton.Configuration.filled() : UIButton.Configuration.gray()
     configuration.title = title
-    configuration.cornerStyle = .large
+    configuration.cornerStyle = .medium
     configuration.buttonSize = buttonSize
     configuration.imagePadding = 8
     configuration.showsActivityIndicator = isLoading
@@ -165,6 +204,8 @@ func WFMakeActionButton(
         action()
     })
     button.isEnabled = isEnabled && !isLoading
+    button.titleLabel?.adjustsFontSizeToFitWidth = true
+    button.titleLabel?.minimumScaleFactor = 0.82
     if let tintColor {
         button.tintColor = tintColor
     }
@@ -178,6 +219,8 @@ func WFMakeStatusBadge(state: WatchCompatibilityState, title: String? = nil) -> 
 
     let label = WFMakeFootnoteLabel(title ?? state.title, color: state.tintColor)
     label.font = .preferredFont(forTextStyle: .caption1).withSize(12)
+    label.numberOfLines = 1
+    label.lineBreakMode = .byTruncatingTail
 
     let stack = UIStackView(arrangedSubviews: [imageView, label])
     stack.axis = .horizontal
@@ -189,12 +232,14 @@ func WFMakeStatusBadge(state: WatchCompatibilityState, title: String? = nil) -> 
     container.backgroundColor = state.tintColor.withAlphaComponent(0.14)
     container.layer.cornerRadius = 999
     container.addSubview(stack)
+    container.setContentHuggingPriority(.required, for: .horizontal)
+    container.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
 
     NSLayoutConstraint.activate([
-        stack.topAnchor.constraint(equalTo: container.topAnchor, constant: 6),
-        stack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 10),
-        stack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -10),
-        stack.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -6),
+        stack.topAnchor.constraint(equalTo: container.topAnchor, constant: 5),
+        stack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 9),
+        stack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -9),
+        stack.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -5),
     ])
 
     return container
@@ -209,7 +254,7 @@ func WFMakeValueRow(title: String, value: String) -> UIView {
 
     let valueLabel = WFMakeTextLabel(value, font: .preferredFont(forTextStyle: .body), lines: 0)
     valueLabel.textAlignment = .right
-    valueLabel.lineBreakMode = .byCharWrapping
+    valueLabel.lineBreakMode = .byWordWrapping
     valueLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
     valueLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
@@ -233,19 +278,19 @@ func WFMakeIconTile(image: UIImage?, symbolName: String, tintColor: UIColor) -> 
 
     let container = UIView()
     container.backgroundColor = image == nil ? tintColor.withAlphaComponent(0.14) : .secondarySystemGroupedBackground
-    container.layer.cornerRadius = 12
+    container.layer.cornerRadius = 10
     container.layer.cornerCurve = .continuous
     container.clipsToBounds = true
     container.translatesAutoresizingMaskIntoConstraints = false
     container.addSubview(imageView)
 
     NSLayoutConstraint.activate([
-        container.widthAnchor.constraint(equalToConstant: 40),
-        container.heightAnchor.constraint(equalToConstant: 40),
-        imageView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-        imageView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-        imageView.topAnchor.constraint(equalTo: container.topAnchor),
-        imageView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+        container.widthAnchor.constraint(equalToConstant: 36),
+        container.heightAnchor.constraint(equalToConstant: 36),
+        imageView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 4),
+        imageView.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -4),
+        imageView.topAnchor.constraint(equalTo: container.topAnchor, constant: 4),
+        imageView.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -4),
     ])
 
     return container

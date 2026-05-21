@@ -53,6 +53,36 @@ fail() {
   exit 1
 }
 
+remove_path() {
+  local path="$1"
+  local attempt
+
+  [ -e "$path" ] || [ -L "$path" ] || return 0
+  for attempt in 1 2 3; do
+    rm -rf "$path" 2>/dev/null && return 0
+    sleep 1
+  done
+
+  fail "failed to remove path: ${path}"
+}
+
+clear_directory_contents() {
+  local dir="$1"
+  local attempt
+
+  [ -d "$dir" ] || return 0
+  for attempt in 1 2 3; do
+    find "$dir" -mindepth 1 -maxdepth 1 -exec rm -rf {} + 2>/dev/null || true
+    if ! find "$dir" -mindepth 1 -maxdepth 1 ! -name '.DS_Store' -print -quit | grep -q .; then
+      rm -f "$dir"/.DS_Store 2>/dev/null || true
+      return 0
+    fi
+    sleep 1
+  done
+
+  fail "failed to clean directory contents: ${dir}"
+}
+
 require_command() {
   command -v "$1" >/dev/null 2>&1 || fail "missing command: $1"
 }
@@ -140,7 +170,11 @@ prepare_private_framework_stubs() {
 }
 
 clean_build_state() {
-  rm -rf "$ROOT_DIR/.theos" "$ROOT_DIR/_" "$ROOT_DIR/packages" "$THEOS_LIB_DIR"
+  mkdir -p "$ROOT_DIR/.theos"
+  clear_directory_contents "$ROOT_DIR/.theos"
+  remove_path "$ROOT_DIR/_"
+  remove_path "$ROOT_DIR/packages"
+  remove_path "$THEOS_LIB_DIR"
 }
 
 build_native_package() {
@@ -150,6 +184,7 @@ build_native_package() {
 
   note "building native ${scheme} package"
   clean_build_state
+  remove_path "$package_dir"
   mkdir -p "$package_dir" "$THEOS_LIB_DIR"
 
   make_args=(
@@ -183,7 +218,12 @@ copy_built_package() {
   local package_dir="$PACKAGE_DIR_ROOT/$scheme"
   local built_deb output_path unpack_root control_architecture
 
-  built_deb="$(find "$package_dir" -maxdepth 1 -name '*.deb' | head -n 1)"
+  built_deb="$(
+    find "$package_dir" -maxdepth 1 -type f -name '*.deb' -exec stat -f '%m %N' {} \; \
+      | sort -nr \
+      | head -n 1 \
+      | cut -d' ' -f2-
+  )"
   [ -n "$built_deb" ] || fail "no ${scheme} deb found in ${package_dir}"
 
   mkdir -p "$OUT_DIR"
@@ -218,7 +258,7 @@ main() {
   require_command xcrun
 
   mkdir -p "$BUILD_DIR" "$PACKAGE_DIR_ROOT" "$UNPACK_DIR" "$OUT_DIR"
-  rm -f "$OUT_DIR"/cn.fkj233.watchfix.mod_*native-roothide*.deb
+  rm -f "$OUT_DIR"/cn.fkj233.watchfix*.deb "$OUT_DIR"/cn.fkj233.watchfix.mod*.deb
 
   local -a schemes=()
   while IFS= read -r scheme; do

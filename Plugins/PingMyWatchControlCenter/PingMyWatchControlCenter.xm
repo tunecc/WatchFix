@@ -23,6 +23,7 @@ typedef BOOL (^WFPMWDeviceSelectorBlock)(id device);
 - (NSArray<NRDevice *> *)getAllDevicesWithArchivedAltAccountDevicesMatching:(BOOL (^)(NRDevice *device))predicate;
 @end
 
+#if !defined(__IPHONE_17_0)
 @interface NSSymbolVariableColorEffect : NSObject
 + (instancetype)effect;
 - (instancetype)effectWithCumulative;
@@ -31,6 +32,7 @@ typedef BOOL (^WFPMWDeviceSelectorBlock)(id device);
 @interface NSSymbolEffectOptions : NSObject
 + (instancetype)optionsWithRepeatCount:(NSInteger)count;
 @end
+#endif
 
 typedef void (^WFPMWSymbolEffectCompletion)(id context);
 

@@ -31,11 +31,12 @@ final class CompatibilityViewController: WFScrollStackViewController {
         let hasActiveWatch = store.currentReport?.hasActiveWatch ?? false
 
         var currentContents: [UIView] = [
-            WFMakeCard([
+            WFMakeActionRowCard([
                 WFMakeActionButton(
                     title: L("compatibility.action.current"),
                     systemImage: "link.circle",
-                    isLoading: store.isRefreshingCompatibility
+                    isLoading: store.isRefreshingCompatibility,
+                    buttonSize: .medium
                 ) { [weak self] in
                     self?.store.refreshCurrentCompatibility()
                 },
@@ -57,12 +58,13 @@ final class CompatibilityViewController: WFScrollStackViewController {
         )
 
         var latestContents: [UIView] = [
-            WFMakeCard([
+            WFMakeActionRowCard([
                 WFMakeActionButton(
                     title: L("compatibility.action.latest"),
                     systemImage: "magnifyingglass.circle",
                     isLoading: store.isScanningUpdate,
-                    isEnabled: hasActiveWatch && !store.isRefreshingCompatibility
+                    isEnabled: hasActiveWatch && !store.isRefreshingCompatibility,
+                    buttonSize: .medium
                 ) { [weak self] in
                     self?.store.scanLatestUpdate()
                 },
@@ -91,13 +93,14 @@ final class CompatibilityViewController: WFScrollStackViewController {
                 if let report = store.scannedReport {
                     scanContents.append(WFMakeCompatibilityCard(report: report))
                 }
-                var actions: [UIView] = []
+                var actions: [UIButton] = []
                 if hasHandledInlineScan || store.scannedReport != nil {
                     actions.append(
                         WFMakeActionButton(
                             title: L("scanner.action.rescan"),
                             systemImage: "arrow.clockwise",
-                            isPrimary: false
+                            isPrimary: false,
+                            buttonSize: .medium
                         ) { [weak self] in
                             self?.resetInlineScan()
                         }
@@ -107,20 +110,22 @@ final class CompatibilityViewController: WFScrollStackViewController {
                     WFMakeActionButton(
                         title: L("scanner.action.close"),
                         systemImage: "xmark",
-                        isPrimary: false
+                        isPrimary: false,
+                        buttonSize: .medium
                     ) { [weak self] in
                         self?.hideScanner()
                     }
                 )
-                scanContents.append(WFMakeCard(actions))
+                scanContents.append(WFMakeActionRowCard(actions))
 
             case .notDetermined:
                 scanContents.append(WFMakeInfoCard(text: L("scanner.permission.requesting")))
-                scanContents.append(WFMakeCard([
+                scanContents.append(WFMakeActionRowCard([
                     WFMakeActionButton(
                         title: L("scanner.action.close"),
                         systemImage: "xmark",
-                        isPrimary: false
+                        isPrimary: false,
+                        buttonSize: .medium
                     ) { [weak self] in
                         self?.hideScanner()
                     },
@@ -132,18 +137,20 @@ final class CompatibilityViewController: WFScrollStackViewController {
                     WFMakeSecondaryLabel(L("scanner.permission.detail")),
                     WFMakeActionButton(
                         title: L("scanner.permission.button"),
-                        systemImage: "camera.viewfinder"
+                        systemImage: "camera.viewfinder",
+                        buttonSize: .medium
                     ) {
                         if let url = URL(string: UIApplication.openSettingsURLString) {
                             UIApplication.shared.open(url)
                         }
                     },
                 ]))
-                scanContents.append(WFMakeCard([
+                scanContents.append(WFMakeActionRowCard([
                     WFMakeActionButton(
                         title: L("scanner.action.close"),
                         systemImage: "xmark",
-                        isPrimary: false
+                        isPrimary: false,
+                        buttonSize: .medium
                     ) { [weak self] in
                         self?.hideScanner()
                     },
@@ -151,10 +158,11 @@ final class CompatibilityViewController: WFScrollStackViewController {
             }
         } else {
             scanContents.append(
-                WFMakeCard([
+                WFMakeActionRowCard([
                     WFMakeActionButton(
                         title: L("compatibility.action.scan"),
-                        systemImage: "qrcode.viewfinder"
+                        systemImage: "qrcode.viewfinder",
+                        buttonSize: .medium
                     ) { [weak self] in
                         self?.showScanner()
                     },
@@ -181,7 +189,7 @@ final class CompatibilityViewController: WFScrollStackViewController {
     private func makeInlineScannerCard() -> UIView {
         let container = UIView()
         container.backgroundColor = .black
-        container.layer.cornerRadius = 18
+        container.layer.cornerRadius = 14
         container.layer.cornerCurve = .continuous
         container.clipsToBounds = true
         container.translatesAutoresizingMaskIntoConstraints = false

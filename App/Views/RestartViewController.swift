@@ -18,23 +18,29 @@ final class RestartViewController: WFScrollStackViewController {
         resetContent()
 
         let hasActiveWatch = store.currentReport?.hasActiveWatch ?? false
-        var watchCardContents: [UIView] = [WFMakeSecondaryLabel(L("restart.watch.detail"))]
+        var watchCardContents: [UIView] = [
+            WFMakeCompactInfoRow(
+                text: L("restart.watch.detail"),
+                symbolName: "applewatch",
+                tintColor: hasActiveWatch ? .secondaryLabel : .systemOrange
+            ),
+        ]
         if !hasActiveWatch {
             watchCardContents.append(WFMakeFootnoteLabel(L("restart.watch.unavailable"), color: .systemOrange))
         }
-        watchCardContents.append(
-            WFMakeActionButton(
-                title: L("restart.watch.button"),
-                systemImage: "applewatch",
-                isLoading: store.isRestartingWatch,
-                isEnabled: hasActiveWatch
-            ) { [weak self] in
-                self?.presentWatchRestartConfirmation()
-            }
-        )
-
         let watchContents: [UIView] = [
             WFMakeCard(watchCardContents),
+            WFMakeActionRowCard([
+                WFMakeActionButton(
+                    title: L("restart.watch.button"),
+                    systemImage: "applewatch",
+                    isLoading: store.isRestartingWatch,
+                    isEnabled: hasActiveWatch,
+                    buttonSize: .medium
+                ) { [weak self] in
+                    self?.presentWatchRestartConfirmation()
+                },
+            ]),
         ]
         contentStack.addArrangedSubview(
             WFMakeSection(title: L("restart.watch.title"), contents: watchContents)
@@ -42,11 +48,17 @@ final class RestartViewController: WFScrollStackViewController {
 
         let serviceContents: [UIView] = [
             WFMakeCard([
-                WFMakeSecondaryLabel(L("restart.services.detail")),
+                WFMakeCompactInfoRow(
+                    text: L("restart.services.detail"),
+                    symbolName: "iphone"
+                ),
+            ]),
+            WFMakeActionRowCard([
                 WFMakeActionButton(
                     title: L("restart.services.button"),
                     systemImage: "iphone",
-                    isLoading: store.isRestartingServices
+                    isLoading: store.isRestartingServices,
+                    buttonSize: .medium
                 ) { [weak self] in
                     self?.presentServiceRestartConfirmation()
                 },
