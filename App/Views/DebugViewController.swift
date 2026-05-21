@@ -44,6 +44,8 @@ final class DebugViewController: WFScrollStackViewController, UITextFieldDelegat
         contentStack.addArrangedSubview(
             WFMakeSection(
                 title: L("debug.section.controls"),
+                symbolName: "slider.horizontal.3",
+                tintColor: .systemBlue,
                 contents: [
                     WFMakeCard([
                         WFMakeActionButton(
@@ -99,6 +101,8 @@ final class DebugViewController: WFScrollStackViewController, UITextFieldDelegat
             WFMakeSection(
                 title: L("debug.section.watch"),
                 footer: L("debug.section.watch.footer"),
+                symbolName: "applewatch",
+                tintColor: .systemOrange,
                 contents: watchContents
             )
         )
@@ -107,6 +111,8 @@ final class DebugViewController: WFScrollStackViewController, UITextFieldDelegat
             WFMakeSection(
                 title: L("debug.section.deviceImage"),
                 footer: L("debug.section.deviceImage.footer"),
+                symbolName: "photo.on.rectangle.angled",
+                tintColor: .systemPink,
                 contents: [makeDeviceImageCard()]
             )
         )
@@ -140,6 +146,8 @@ final class DebugViewController: WFScrollStackViewController, UITextFieldDelegat
             WFMakeSection(
                 title: L("debug.section.capabilities"),
                 footer: L("debug.section.capabilities.footer"),
+                symbolName: "checklist",
+                tintColor: .systemGreen,
                 contents: capabilityContents
             )
         )
@@ -172,6 +180,8 @@ final class DebugViewController: WFScrollStackViewController, UITextFieldDelegat
             WFMakeSection(
                 title: L("debug.section.raw"),
                 footer: L("debug.section.raw.footer"),
+                symbolName: "chevron.left.forwardslash.chevron.right",
+                tintColor: .systemIndigo,
                 contents: rawContents
             )
         )
@@ -179,6 +189,8 @@ final class DebugViewController: WFScrollStackViewController, UITextFieldDelegat
         contentStack.addArrangedSubview(
             WFMakeSection(
                 title: L("debug.section.phone"),
+                symbolName: "iphone",
+                tintColor: .systemTeal,
                 contents: [makePhoneCard()]
             )
         )

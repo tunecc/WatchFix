@@ -88,11 +88,55 @@ struct PluginInjectionTargets: Hashable {
     let executables: [String]
 }
 
+enum PluginIconTintStyle: String, Hashable {
+    case blue
+    case cyan
+    case green
+    case gray
+    case indigo
+    case orange
+    case pink
+    case purple
+    case red
+    case teal
+
+    var color: UIColor {
+        switch self {
+        case .blue:
+            return .systemBlue
+        case .cyan:
+            return .systemCyan
+        case .green:
+            return .systemGreen
+        case .gray:
+            return .systemGray
+        case .indigo:
+            return .systemIndigo
+        case .orange:
+            return .systemOrange
+        case .pink:
+            return .systemPink
+        case .purple:
+            return .systemPurple
+        case .red:
+            return .systemRed
+        case .teal:
+            return .systemTeal
+        }
+    }
+}
+
+struct PluginIconStyle: Hashable {
+    let symbolName: String
+    let tintStyle: PluginIconTintStyle
+}
+
 struct PluginMetadata: Hashable {
     let identifier: String
     let title: String
     let detail: String
     let symbolName: String
+    let iconTintStyle: PluginIconTintStyle
     let shortVersion: String
     let buildVersion: String
     let scopeIdentifier: String
@@ -107,6 +151,8 @@ struct PluginMetadata: Hashable {
     let isTool: Bool
     let hasInstallableContent: Bool
     let hasConfigurationInterface: Bool
+
+    var iconTintColor: UIColor { iconTintStyle.color }
 }
 
 struct PluginValidation: Hashable {
@@ -357,11 +403,13 @@ enum Catalog {
 
     static func metadata(for identifier: String) -> PluginMetadata {
         let bundledPlugins = loadBundledPlugins()
+        let iconStyle = iconStyle(forIdentifier: identifier, scopeIdentifier: identifier)
         return bundledPlugins.first(where: { $0.identifier == identifier }) ?? PluginMetadata(
             identifier: identifier,
             title: identifier,
             detail: identifier,
-            symbolName: symbolName(forScopeIdentifier: identifier),
+            symbolName: iconStyle.symbolName,
+            iconTintStyle: iconStyle.tintStyle,
             shortVersion: "",
             buildVersion: "",
             scopeIdentifier: identifier,
@@ -444,12 +492,14 @@ enum Catalog {
         let detail = PluginHelpCatalog.tagline(for: identifier) ?? bundledDetail
         let scopeIdentifier = manifest["WFPluginScopeIdentifier"] as? String ?? identifier
         let injectionTargets = (manifest["WFPluginInjectionTargets"] as? [String: Any]) ?? [:]
+        let iconStyle = iconStyle(forIdentifier: identifier, scopeIdentifier: scopeIdentifier)
 
         return PluginMetadata(
             identifier: identifier,
             title: title,
             detail: detail,
-            symbolName: symbolName(forScopeIdentifier: scopeIdentifier),
+            symbolName: iconStyle.symbolName,
+            iconTintStyle: iconStyle.tintStyle,
             shortVersion: info["WFPluginVersion"] as? String ?? info["CFBundleShortVersionString"] as? String ?? "",
             buildVersion: info["WFPluginBuildVersion"] as? String ?? info["CFBundleVersion"] as? String ?? "",
             scopeIdentifier: scopeIdentifier,
@@ -488,8 +538,63 @@ enum Catalog {
         return key
     }
 
-    private static func symbolName(forScopeIdentifier scopeIdentifier: String) -> String {
-        return "puzzlepiece.extension"
+    private static func iconStyle(forIdentifier identifier: String, scopeIdentifier: String) -> PluginIconStyle {
+        switch identifier {
+        case "APSSupport":
+            return PluginIconStyle(symbolName: "dot.radiowaves.left.and.right", tintStyle: .cyan)
+        case "AppsSupport":
+            return PluginIconStyle(symbolName: "square.stack.3d.up.fill", tintStyle: .blue)
+        case "LayoutSupport":
+            return PluginIconStyle(symbolName: "square.grid.3x3.fill", tintStyle: .indigo)
+        case "LockdownModeSupport":
+            return PluginIconStyle(symbolName: "lock.shield", tintStyle: .gray)
+        case "MediaSyncSupport":
+            return PluginIconStyle(symbolName: "music.note.list", tintStyle: .pink)
+        case "MessagesSupport":
+            return PluginIconStyle(symbolName: "message.fill", tintStyle: .green)
+        case "MobileDataSupport":
+            return PluginIconStyle(symbolName: "antenna.radiowaves.left.and.right", tintStyle: .green)
+        case "NanoMapsSupport":
+            return PluginIconStyle(symbolName: "map.fill", tintStyle: .teal)
+        case "PairingCompatibility":
+            return PluginIconStyle(symbolName: "link.badge.plus", tintStyle: .blue)
+        case "PhotoLibrarySupport":
+            return PluginIconStyle(symbolName: "photo.on.rectangle.angled", tintStyle: .pink)
+        case "PingMyWatchControlCenter":
+            return PluginIconStyle(symbolName: "dot.radiowaves.left.and.right", tintStyle: .blue)
+        case "WatchAppSupport":
+            return PluginIconStyle(symbolName: "applewatch", tintStyle: .orange)
+        case "WatchFaceSupport":
+            return PluginIconStyle(symbolName: "clock.fill", tintStyle: .purple)
+        case "WatchUpdateBlock":
+            return PluginIconStyle(symbolName: "nosign", tintStyle: .red)
+        default:
+            break
+        }
+
+        switch scopeIdentifier {
+        case "com.apple.MobileSMS":
+            return PluginIconStyle(symbolName: "message.fill", tintStyle: .green)
+        case "com.apple.Music":
+            return PluginIconStyle(symbolName: "music.note", tintStyle: .pink)
+        case "com.apple.Maps":
+            return PluginIconStyle(symbolName: "map.fill", tintStyle: .teal)
+        case "com.apple.mobileslideshow":
+            return PluginIconStyle(symbolName: "photo", tintStyle: .pink)
+        case "com.apple.mobilephone":
+            return PluginIconStyle(symbolName: "antenna.radiowaves.left.and.right", tintStyle: .green)
+        case "com.apple.AppStore":
+            return PluginIconStyle(symbolName: "square.stack.3d.up.fill", tintStyle: .blue)
+        case "com.apple.Preferences":
+            return PluginIconStyle(symbolName: "gearshape.fill", tintStyle: .gray)
+        case "com.apple.Bridge":
+            return PluginIconStyle(symbolName: "applewatch", tintStyle: .orange)
+        default:
+            if scopeIdentifier.hasPrefix("cn.fkj233.watchfix.") {
+                return PluginIconStyle(symbolName: "switch.2", tintStyle: .blue)
+            }
+            return PluginIconStyle(symbolName: "puzzlepiece.extension", tintStyle: .blue)
+        }
     }
 
     private static func validation(

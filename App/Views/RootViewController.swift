@@ -4,6 +4,7 @@ import UIKit
 private struct MenuItem {
     let title: String
     let symbolName: String
+    let tintColor: UIColor
 }
 
 private enum Screen: Int, CaseIterable {
@@ -19,32 +20,38 @@ private enum Screen: Int, CaseIterable {
         case .compatibility:
             return MenuItem(
                 title: L("landing.compatibility.title"),
-                symbolName: "checkmark.shield.fill"
+                symbolName: "checkmark.shield.fill",
+                tintColor: .systemGreen
             )
         case .features:
             return MenuItem(
                 title: L("landing.features.title"),
-                symbolName: "slider.horizontal.3"
+                symbolName: "puzzlepiece.extension.fill",
+                tintColor: .systemIndigo
             )
         case .restart:
             return MenuItem(
                 title: L("landing.restart.title"),
-                symbolName: "arrow.clockwise.circle.fill"
+                symbolName: "arrow.clockwise.circle.fill",
+                tintColor: .systemOrange
             )
         case .logs:
             return MenuItem(
                 title: L("landing.logs.title"),
-                symbolName: "text.alignleft"
+                symbolName: "doc.text.magnifyingglass",
+                tintColor: .systemTeal
             )
         case .debug:
             return MenuItem(
                 title: L("landing.debug.title"),
-                symbolName: "ladybug.fill"
+                symbolName: "ladybug.fill",
+                tintColor: .systemPink
             )
         case .about:
             return MenuItem(
                 title: L("landing.about.title"),
-                symbolName: "info.circle.fill"
+                symbolName: "info.circle.fill",
+                tintColor: .systemBlue
             )
         }
     }
@@ -119,7 +126,7 @@ final class RootViewController: UITableViewController {
         content.secondaryTextProperties.color = .secondaryLabel
         content.secondaryTextProperties.numberOfLines = 0
         content.image = UIImage(systemName: item.symbolName)
-        content.imageProperties.tintColor = view.tintColor
+        content.imageProperties.tintColor = item.tintColor
         cell.contentConfiguration = content
         cell.accessoryType = .disclosureIndicator
         cell.selectionStyle = .default

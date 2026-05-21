@@ -21,6 +21,8 @@ final class AboutViewController: WFScrollStackViewController {
         contentStack.addArrangedSubview(
             WFMakeSection(
                 title: L("about.section.app"),
+                symbolName: "applewatch",
+                tintColor: .systemBlue,
                 contents: [
                     makeHeaderCard(),
                     WFMakeCard([
@@ -36,6 +38,8 @@ final class AboutViewController: WFScrollStackViewController {
         contentStack.addArrangedSubview(
             WFMakeSection(
                 title: L("about.section.overview"),
+                symbolName: "sparkles",
+                tintColor: .systemIndigo,
                 contents: [WFMakeInfoCard(text: L("about.overview.body"))]
             )
         )
@@ -43,6 +47,8 @@ final class AboutViewController: WFScrollStackViewController {
         contentStack.addArrangedSubview(
             WFMakeSection(
                 title: L("about.section.project"),
+                symbolName: "link.circle.fill",
+                tintColor: .systemTeal,
                 contents: [
                     WFMakeCard([
                         WFMakeActionButton(
@@ -60,6 +66,8 @@ final class AboutViewController: WFScrollStackViewController {
         contentStack.addArrangedSubview(
             WFMakeSection(
                 title: L("about.section.support"),
+                symbolName: "heart.circle.fill",
+                tintColor: .systemPink,
                 contents: [
                     WFMakeInfoCard(text: L("about.support.body")),
                     WFMakeCard([
@@ -85,8 +93,8 @@ final class AboutViewController: WFScrollStackViewController {
 
     private func makeHeaderCard() -> UIView {
         let iconView = WFMakeIconTile(
-            image: UIImage(named: "AppIcon60x60"),
-            symbolName: "info.circle.fill",
+            image: nil,
+            symbolName: "applewatch",
             tintColor: .systemBlue
         )
 

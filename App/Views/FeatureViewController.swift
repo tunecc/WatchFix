@@ -92,6 +92,8 @@ final class FeatureViewController: WFScrollStackViewController {
             WFMakeSection(
                 title: L("features.plugins.installed.title"),
                 footer: L("features.plugins.footer"),
+                symbolName: "checkmark.circle.fill",
+                tintColor: .systemGreen,
                 contents: installedContents
             )
         )
@@ -124,6 +126,8 @@ final class FeatureViewController: WFScrollStackViewController {
                 WFMakeSection(
                     title: L("features.plugins.unavailable.title"),
                     footer: L("features.plugins.unavailable.footer"),
+                    symbolName: "square.and.arrow.down.fill",
+                    tintColor: .systemOrange,
                     contents: unavailableContents
                 )
             )
@@ -172,6 +176,8 @@ final class FeatureViewController: WFScrollStackViewController {
                 WFMakeSection(
                     title: L("features.tools.title"),
                     footer: L("features.tools.footer"),
+                    symbolName: "wrench.and.screwdriver.fill",
+                    tintColor: .systemBlue,
                     contents: toolContents
                 )
             )
@@ -201,6 +207,8 @@ final class FeatureViewController: WFScrollStackViewController {
                 WFMakeSection(
                     title: L("features.plugins.unsupported.title"),
                     footer: L("features.plugins.unsupported.footer"),
+                    symbolName: "exclamationmark.triangle.fill",
+                    tintColor: .systemRed,
                     contents: unsupportedContents
                 )
             )

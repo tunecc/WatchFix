@@ -9,13 +9,24 @@ struct WFCardReferenceItem {
     let detail: String?
 }
 
-func WFMakeSection(title: String, footer: String? = nil, contents: [UIView]) -> UIView {
+func WFMakeSection(
+    title: String,
+    footer: String? = nil,
+    symbolName: String? = nil,
+    tintColor: UIColor = .systemBlue,
+    contents: [UIView]
+) -> UIView {
     let stack = UIStackView()
     stack.axis = .vertical
     stack.spacing = 8
 
     let titleLabel = WFMakeTextLabel(title, font: .preferredFont(forTextStyle: .headline))
-    stack.addArrangedSubview(titleLabel)
+    titleLabel.numberOfLines = 0
+    if let symbolName {
+        stack.addArrangedSubview(makeCardHeader(title: title, symbolName: symbolName, tintColor: tintColor))
+    } else {
+        stack.addArrangedSubview(titleLabel)
+    }
 
     contents.forEach { stack.addArrangedSubview($0) }
 
@@ -270,7 +281,10 @@ func WFMakeValueRow(title: String, value: String) -> UIView {
 }
 
 func WFMakeIconTile(image: UIImage?, symbolName: String, tintColor: UIColor) -> UIView {
-    let resolvedImage = image ?? UIImage(systemName: symbolName)
+    let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
+    let resolvedImage = image
+        ?? UIImage(systemName: symbolName, withConfiguration: symbolConfiguration)
+        ?? UIImage(systemName: "puzzlepiece.extension", withConfiguration: symbolConfiguration)
     let imageView = UIImageView(image: resolvedImage)
     imageView.tintColor = image == nil ? tintColor : nil
     imageView.contentMode = .scaleAspectFit
@@ -299,6 +313,7 @@ func WFMakeIconTile(image: UIImage?, symbolName: String, tintColor: UIColor) -> 
 private func makeCardHeader(title: String, symbolName: String, tintColor: UIColor) -> UIView {
     let iconView = WFMakeIconTile(image: nil, symbolName: symbolName, tintColor: tintColor)
     let titleLabel = WFMakeTextLabel(title, font: .preferredFont(forTextStyle: .headline))
+    titleLabel.numberOfLines = 0
     let stack = UIStackView(arrangedSubviews: [iconView, titleLabel])
     stack.axis = .horizontal
     stack.alignment = .center
@@ -547,9 +562,9 @@ func WFMakePluginCard(
     onAction: @escaping () -> Void
 ) -> UIView {
     let iconView = WFMakeIconTile(
-        image: WFPluginBridge.pluginIcon(forScopeIdentifier: plugin.metadata.scopeIdentifier),
+        image: nil,
         symbolName: plugin.metadata.symbolName,
-        tintColor: .systemBlue
+        tintColor: plugin.metadata.iconTintColor
     )
     let titleLabel = WFMakeTextLabel(plugin.title, font: .preferredFont(forTextStyle: .headline))
     let detailLabel = WFMakeSecondaryLabel(plugin.detail)
@@ -632,9 +647,9 @@ func WFMakePluginCard(
 
 func WFMakePluginHeaderCard(plugin: PluginState) -> UIView {
     let iconView = WFMakeIconTile(
-        image: WFPluginBridge.pluginIcon(forScopeIdentifier: plugin.metadata.scopeIdentifier),
+        image: nil,
         symbolName: plugin.metadata.symbolName,
-        tintColor: .systemBlue
+        tintColor: plugin.metadata.iconTintColor
     )
     let titleLabel = WFMakeTextLabel(plugin.title, font: .preferredFont(forTextStyle: .headline))
     titleLabel.numberOfLines = 0

@@ -89,6 +89,37 @@ static NSString *WFPairingFormattedVersion(NSInteger encodedVersion) {
     return [NSString stringWithFormat:@"%ld.%ld", (long)major, (long)minor];
 }
 
+static UIView *WFPairingMakeSymbolTile(NSString *symbolName, UIColor *tintColor) {
+    UIImageSymbolConfiguration *config = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIImageSymbolWeightSemibold];
+    UIImage *image = [UIImage systemImageNamed:symbolName withConfiguration:config];
+    if (!image) {
+        image = [UIImage systemImageNamed:@"puzzlepiece.extension" withConfiguration:config];
+    }
+
+    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
+    imageView.translatesAutoresizingMaskIntoConstraints = NO;
+    imageView.tintColor = tintColor;
+    imageView.contentMode = UIViewContentModeScaleAspectFit;
+
+    UIView *container = [[UIView alloc] init];
+    container.translatesAutoresizingMaskIntoConstraints = NO;
+    container.backgroundColor = [tintColor colorWithAlphaComponent:0.14];
+    container.layer.cornerRadius = 10.0;
+    container.layer.cornerCurve = kCACornerCurveContinuous;
+    container.clipsToBounds = YES;
+    [container addSubview:imageView];
+
+    [container.widthAnchor constraintEqualToConstant:42].active = YES;
+    [container.heightAnchor constraintEqualToConstant:42].active = YES;
+
+    [imageView.leadingAnchor constraintEqualToAnchor:container.leadingAnchor constant:5].active = YES;
+    [imageView.trailingAnchor constraintEqualToAnchor:container.trailingAnchor constant:-5].active = YES;
+    [imageView.topAnchor constraintEqualToAnchor:container.topAnchor constant:5].active = YES;
+    [imageView.bottomAnchor constraintEqualToAnchor:container.bottomAnchor constant:-5].active = YES;
+
+    return container;
+}
+
 static NSArray<NSString *> *WFPairingRequirementNotes(WFPluginConfigurationContext *context) {
     NSDictionary<NSString *, id> *manifest = context.pluginManifest ?: @{};
     NSMutableArray<NSString *> *notes = [NSMutableArray array];
@@ -486,17 +517,7 @@ static BOOL WFPairingApplyDeviceSupportRange(BOOL enabled, NSDictionary<NSString
 }
 
 - (UIView *)makeHeaderCard {
-    UIImage *icon = nil;
-    NSString *scopeIdentifier = WFPairingStringValue(self.context.pluginManifest[@"WFPluginScopeIdentifier"]);
-    if (scopeIdentifier.length > 0) {
-        icon = [WFPluginBridge pluginIconForScopeIdentifier:scopeIdentifier];
-    }
-    UIImageView *iconView = [[UIImageView alloc] initWithImage:icon ?: [UIImage systemImageNamed:@"link.badge.plus"]];
-    iconView.translatesAutoresizingMaskIntoConstraints = NO;
-    iconView.tintColor = icon ? nil : UIColor.systemBlueColor;
-    iconView.contentMode = UIViewContentModeScaleAspectFit;
-    [iconView.widthAnchor constraintEqualToConstant:42].active = YES;
-    [iconView.heightAnchor constraintEqualToConstant:42].active = YES;
+    UIView *iconView = WFPairingMakeSymbolTile(@"link.badge.plus", UIColor.systemBlueColor);
 
     UILabel *titleLabel = [self makeLabelWithText:self.context.pluginTitle font:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline] color:UIColor.labelColor lines:0];
     UILabel *detailLabel = [self makeLabelWithText:self.context.pluginDetail font:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline] color:UIColor.secondaryLabelColor lines:0];

@@ -54,7 +54,12 @@ final class CompatibilityViewController: WFScrollStackViewController {
         }
 
         contentStack.addArrangedSubview(
-            WFMakeSection(title: L("compatibility.section.current"), contents: currentContents)
+            WFMakeSection(
+                title: L("compatibility.section.current"),
+                symbolName: "applewatch",
+                tintColor: .systemBlue,
+                contents: currentContents
+            )
         )
 
         var latestContents: [UIView] = [
@@ -81,7 +86,12 @@ final class CompatibilityViewController: WFScrollStackViewController {
 
         latestContents.append(WFMakeUpdateCard(status: store.latestUpdateStatus))
         contentStack.addArrangedSubview(
-            WFMakeSection(title: L("compatibility.section.latest"), contents: latestContents)
+            WFMakeSection(
+                title: L("compatibility.section.latest"),
+                symbolName: "sparkles",
+                tintColor: .systemPurple,
+                contents: latestContents
+            )
         )
 
         var scanContents: [UIView] = []
@@ -179,6 +189,8 @@ final class CompatibilityViewController: WFScrollStackViewController {
             WFMakeSection(
                 title: L("compatibility.section.scan"),
                 footer: isScannerVisible ? nil : L("compatibility.scan.footer"),
+                symbolName: "qrcode.viewfinder",
+                tintColor: .systemTeal,
                 contents: scanContents
             )
         )

@@ -55,7 +55,12 @@ final class LogsViewController: WFScrollStackViewController {
             ]),
         ]
         contentStack.addArrangedSubview(
-            WFMakeSection(title: L("logs.section.controls"), contents: controlContents)
+            WFMakeSection(
+                title: L("logs.section.controls"),
+                symbolName: "switch.2",
+                tintColor: .systemGreen,
+                contents: controlContents
+            )
         )
 
         var entryContents: [UIView] = []
@@ -69,7 +74,12 @@ final class LogsViewController: WFScrollStackViewController {
         }
 
         contentStack.addArrangedSubview(
-            WFMakeSection(title: L("logs.section.entries"), contents: entryContents)
+            WFMakeSection(
+                title: L("logs.section.entries"),
+                symbolName: "doc.text.fill",
+                tintColor: .systemTeal,
+                contents: entryContents
+            )
         )
     }
 }

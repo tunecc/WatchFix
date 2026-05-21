@@ -43,7 +43,12 @@ final class RestartViewController: WFScrollStackViewController {
             ]),
         ]
         contentStack.addArrangedSubview(
-            WFMakeSection(title: L("restart.watch.title"), contents: watchContents)
+            WFMakeSection(
+                title: L("restart.watch.title"),
+                symbolName: "applewatch",
+                tintColor: .systemOrange,
+                contents: watchContents
+            )
         )
 
         let serviceContents: [UIView] = [
@@ -65,7 +70,12 @@ final class RestartViewController: WFScrollStackViewController {
             ]),
         ]
         contentStack.addArrangedSubview(
-            WFMakeSection(title: L("restart.services.title"), contents: serviceContents)
+            WFMakeSection(
+                title: L("restart.services.title"),
+                symbolName: "iphone",
+                tintColor: .systemBlue,
+                contents: serviceContents
+            )
         )
     }
 

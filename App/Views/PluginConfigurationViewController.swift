@@ -66,6 +66,8 @@ final class PluginConfigurationViewController: WFScrollStackViewController {
             contentStack.addArrangedSubview(
                 WFMakeSection(
                     title: L("plugin.configuration.settings.title"),
+                    symbolName: "slider.horizontal.3",
+                    tintColor: .systemIndigo,
                     contents: [WFMakeInfoCard(text: pageLoadError)]
                 )
             )
@@ -110,6 +112,8 @@ final class PluginConfigurationViewController: WFScrollStackViewController {
             contentStack.addArrangedSubview(
                 WFMakeSection(
                     title: L("plugin.configuration.settings.title"),
+                    symbolName: "slider.horizontal.3",
+                    tintColor: .systemIndigo,
                     contents: [WFMakeInfoCard(text: L("plugin.configuration.noCustomSettings"))]
                 )
             )
@@ -127,6 +131,8 @@ final class PluginConfigurationViewController: WFScrollStackViewController {
                 WFMakeSection(
                     title: stringValue(section[PluginConfigurationSectionKey.title], fallback: L("plugin.configuration.settings.title")) ?? L("plugin.configuration.settings.title"),
                     footer: stringValue(section[PluginConfigurationSectionKey.footer], fallback: nil),
+                    symbolName: "slider.horizontal.3",
+                    tintColor: .systemIndigo,
                     contents: contents
                 )
             )
@@ -160,6 +166,8 @@ final class PluginConfigurationViewController: WFScrollStackViewController {
 
         return WFMakeSection(
             title: L("plugin.configuration.installation.title"),
+            symbolName: "shippingbox.fill",
+            tintColor: .systemBlue,
             contents: sectionContents
         )
     }
@@ -197,6 +205,8 @@ final class PluginConfigurationViewController: WFScrollStackViewController {
 
         return WFMakeSection(
             title: L("plugin.configuration.save.title"),
+            symbolName: "square.and.arrow.down.fill",
+            tintColor: .systemGreen,
             contents: [
                 WFMakeInfoCard(text: statusText),
                 WFMakeCard([saveButton, restoreButton, defaultsButton]),
@@ -253,6 +263,8 @@ final class PluginConfigurationViewController: WFScrollStackViewController {
         return WFMakeSection(
             title: L("plugin.help.section.title"),
             footer: L("plugin.help.section.footer"),
+            symbolName: "questionmark.circle.fill",
+            tintColor: .systemPurple,
             contents: contents
         )
     }
