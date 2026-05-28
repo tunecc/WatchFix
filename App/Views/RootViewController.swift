@@ -76,7 +76,8 @@ final class RootViewController: UITableViewController {
         applyLocalizedContent()
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "MenuCell")
         tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 82
+        tableView.estimatedRowHeight = 76
+        tableView.separatorStyle = .none
         bindStore()
     }
 
@@ -101,11 +102,19 @@ final class RootViewController: UITableViewController {
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        1
+        Screen.allCases.count
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        Screen.allCases.count
+        1
+    }
+
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        section == 0 ? 10 : 6
+    }
+
+    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        0.01
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -114,7 +123,7 @@ final class RootViewController: UITableViewController {
 
     private func menuCell(for indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MenuCell", for: indexPath)
-        let screen = Screen(rawValue: indexPath.row) ?? .compatibility
+        let screen = Screen(rawValue: indexPath.section) ?? .compatibility
         let item = screen.item
 
         var content = UIListContentConfiguration.subtitleCell()
@@ -125,9 +134,18 @@ final class RootViewController: UITableViewController {
         content.secondaryTextProperties.font = .preferredFont(forTextStyle: .subheadline)
         content.secondaryTextProperties.color = .secondaryLabel
         content.secondaryTextProperties.numberOfLines = 0
-        content.image = UIImage(systemName: item.symbolName)
-        content.imageProperties.tintColor = item.tintColor
+        content.image = WFMakeIconTileImage(symbolName: item.symbolName, tintColor: item.tintColor)
+        content.imageProperties.reservedLayoutSize = CGSize(width: 40, height: 40)
         cell.contentConfiguration = content
+        var background = UIBackgroundConfiguration.listGroupedCell()
+        background.cornerRadius = WFCardCornerRadius
+        cell.backgroundConfiguration = background
+        let selectedView = UIView()
+        selectedView.backgroundColor = .tertiarySystemGroupedBackground
+        selectedView.layer.cornerRadius = WFCardCornerRadius
+        selectedView.layer.cornerCurve = .continuous
+        selectedView.clipsToBounds = true
+        cell.selectedBackgroundView = selectedView
         cell.accessoryType = .disclosureIndicator
         cell.selectionStyle = .default
         return cell
@@ -135,7 +153,7 @@ final class RootViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let screen = Screen(rawValue: indexPath.row) ?? .compatibility
+        let screen = Screen(rawValue: indexPath.section) ?? .compatibility
         let controller: UIViewController
         switch screen {
         case .compatibility:

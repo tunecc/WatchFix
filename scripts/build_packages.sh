@@ -13,7 +13,9 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd -P)"
 BUILD_DIR="$ROOT_DIR/.build/package_build"
+THEOS_STATE_DIR="$BUILD_DIR/theos_state"
 STUB_DIR="$BUILD_DIR/private_framework_stubs"
+MODULE_CACHE_DIR="$BUILD_DIR/module_cache"
 THEOS_LIB_DIR="$BUILD_DIR/theos_library"
 PACKAGE_DIR_ROOT="$BUILD_DIR/packages"
 OUT_DIR="$ROOT_DIR/out"
@@ -170,8 +172,10 @@ prepare_private_framework_stubs() {
 }
 
 clean_build_state() {
-  mkdir -p "$ROOT_DIR/.theos"
-  clear_directory_contents "$ROOT_DIR/.theos"
+  local state_dir="$1"
+
+  mkdir -p "$state_dir"
+  clear_directory_contents "$state_dir"
   remove_path "$ROOT_DIR/_"
   remove_path "$ROOT_DIR/packages"
   remove_path "$THEOS_LIB_DIR"
@@ -180,12 +184,15 @@ clean_build_state() {
 build_native_package() {
   local scheme="$1"
   local package_dir="$PACKAGE_DIR_ROOT/$scheme"
+  local state_dir="$THEOS_STATE_DIR/$scheme"
+  local module_cache_dir="$MODULE_CACHE_DIR/$scheme"
   local -a make_args
 
   note "building native ${scheme} package"
-  clean_build_state
+  clean_build_state "$state_dir"
   remove_path "$package_dir"
-  mkdir -p "$package_dir" "$THEOS_LIB_DIR"
+  clear_directory_contents "$module_cache_dir"
+  mkdir -p "$package_dir" "$THEOS_LIB_DIR" "$module_cache_dir"
 
   make_args=(
     clean package
@@ -195,6 +202,9 @@ build_native_package() {
     "THEOS_LIBRARY_PATH=${THEOS_LIB_DIR}"
     "THEOS_PACKAGE_DIR=${package_dir}"
     "TARGET=${TARGET_SPEC}"
+    "_THEOS_LOCAL_DATA_DIR=${state_dir}"
+    "ADDITIONAL_CFLAGS=-fmodules-cache-path=${module_cache_dir}"
+    "ADDITIONAL_SWIFTFLAGS=-module-cache-path ${module_cache_dir}"
   )
 
   if should_use_local_workaround; then

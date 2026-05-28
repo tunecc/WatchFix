@@ -201,7 +201,7 @@ final class CompatibilityViewController: WFScrollStackViewController {
     private func makeInlineScannerCard() -> UIView {
         let container = UIView()
         container.backgroundColor = .black
-        container.layer.cornerRadius = 14
+        container.layer.cornerRadius = WFCardCornerRadius
         container.layer.cornerCurve = .continuous
         container.clipsToBounds = true
         container.translatesAutoresizingMaskIntoConstraints = false

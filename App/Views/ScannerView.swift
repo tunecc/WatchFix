@@ -84,7 +84,7 @@ final class ScannerViewController: WFScrollStackViewController {
     private func makeScannerPreviewCard() -> UIView {
         let container = UIView()
         container.backgroundColor = .black
-        container.layer.cornerRadius = 18
+        container.layer.cornerRadius = WFCardCornerRadius
         container.layer.cornerCurve = .continuous
         container.clipsToBounds = true
         container.translatesAutoresizingMaskIntoConstraints = false

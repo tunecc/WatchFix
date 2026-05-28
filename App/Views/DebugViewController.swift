@@ -485,7 +485,10 @@ final class DebugViewController: WFScrollStackViewController, UITextFieldDelegat
 
     private func makeDeviceImageCard() -> UIView {
         let textField = UITextField()
-        textField.borderStyle = .roundedRect
+        textField.borderStyle = .none
+        textField.backgroundColor = .tertiarySystemGroupedBackground
+        textField.layer.cornerRadius = WFControlCornerRadius
+        textField.layer.cornerCurve = .continuous
         textField.font = .monospacedSystemFont(ofSize: 15, weight: .regular)
         textField.autocorrectionType = .no
         textField.autocapitalizationType = .none
@@ -494,11 +497,16 @@ final class DebugViewController: WFScrollStackViewController, UITextFieldDelegat
         textField.placeholder = L("debug.deviceImage.input.placeholder")
         textField.text = manualProductType
         textField.delegate = self
+        textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 1))
+        textField.leftViewMode = .always
+        textField.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 1))
+        textField.rightViewMode = .unlessEditing
         textField.addTarget(self, action: #selector(deviceImageInputChanged(_:)), for: .editingChanged)
+        textField.heightAnchor.constraint(greaterThanOrEqualToConstant: 42).isActive = true
 
         let imageContainer = UIView()
         imageContainer.translatesAutoresizingMaskIntoConstraints = false
-        imageContainer.layer.cornerRadius = 18
+        imageContainer.layer.cornerRadius = WFCardCornerRadius
         imageContainer.layer.cornerCurve = .continuous
         imageContainer.clipsToBounds = true
 
@@ -562,7 +570,7 @@ final class DebugViewController: WFScrollStackViewController, UITextFieldDelegat
     private func makeWatchImageView(preview: WatchImageHelper.Preview, dimension: CGFloat) -> UIView {
         let imageContainer = UIView()
         imageContainer.translatesAutoresizingMaskIntoConstraints = false
-        imageContainer.layer.cornerRadius = 16
+        imageContainer.layer.cornerRadius = WFCardCornerRadius
         imageContainer.layer.cornerCurve = .continuous
         imageContainer.clipsToBounds = true
 

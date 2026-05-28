@@ -4,6 +4,7 @@
 #import "PluginBridge.h"
 #import "PluginConfig.h"
 #import "Logging.h"
+#import "WFRoundedCorners.h"
 #include "PairingCompatibility.h"
 
 static NSString *const kPairingMinKey = @"PairingCompatibilityMinVersion";
@@ -27,6 +28,8 @@ static NSString *const kPairedSyncPreferencesPath = @"/var/mobile/Library/Prefer
 static NSInteger const kDeviceSupportRangeMinCompatibilityVersion = MIN_COMP;
 static NSInteger const kDeviceSupportRangeMaxCompatibilityVersion = MAX_COMP;
 static NSInteger const kDeviceSupportRangeActivityTimeout = ACTIVE_TIMEOUT;
+static CGFloat const kWFPairingIconTileSize = 40.0;
+static CGFloat const kWFPairingIconTilePadding = 5.0;
 
 typedef BOOL (^WFPairingOperationBlock)(NSError **error);
 
@@ -90,7 +93,7 @@ static NSString *WFPairingFormattedVersion(NSInteger encodedVersion) {
 }
 
 static UIView *WFPairingMakeSymbolTile(NSString *symbolName, UIColor *tintColor) {
-    UIImageSymbolConfiguration *config = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIImageSymbolWeightSemibold];
+    UIImageSymbolConfiguration *config = [UIImageSymbolConfiguration configurationWithPointSize:19 weight:UIImageSymbolWeightSemibold];
     UIImage *image = [UIImage systemImageNamed:symbolName withConfiguration:config];
     if (!image) {
         image = [UIImage systemImageNamed:@"puzzlepiece.extension" withConfiguration:config];
@@ -104,18 +107,18 @@ static UIView *WFPairingMakeSymbolTile(NSString *symbolName, UIColor *tintColor)
     UIView *container = [[UIView alloc] init];
     container.translatesAutoresizingMaskIntoConstraints = NO;
     container.backgroundColor = [tintColor colorWithAlphaComponent:0.14];
-    container.layer.cornerRadius = 10.0;
+    container.layer.cornerRadius = WFUIIconTileCornerRadius;
     container.layer.cornerCurve = kCACornerCurveContinuous;
     container.clipsToBounds = YES;
     [container addSubview:imageView];
 
-    [container.widthAnchor constraintEqualToConstant:42].active = YES;
-    [container.heightAnchor constraintEqualToConstant:42].active = YES;
+    [container.widthAnchor constraintEqualToConstant:kWFPairingIconTileSize].active = YES;
+    [container.heightAnchor constraintEqualToConstant:kWFPairingIconTileSize].active = YES;
 
-    [imageView.leadingAnchor constraintEqualToAnchor:container.leadingAnchor constant:5].active = YES;
-    [imageView.trailingAnchor constraintEqualToAnchor:container.trailingAnchor constant:-5].active = YES;
-    [imageView.topAnchor constraintEqualToAnchor:container.topAnchor constant:5].active = YES;
-    [imageView.bottomAnchor constraintEqualToAnchor:container.bottomAnchor constant:-5].active = YES;
+    [imageView.leadingAnchor constraintEqualToAnchor:container.leadingAnchor constant:kWFPairingIconTilePadding].active = YES;
+    [imageView.trailingAnchor constraintEqualToAnchor:container.trailingAnchor constant:-kWFPairingIconTilePadding].active = YES;
+    [imageView.topAnchor constraintEqualToAnchor:container.topAnchor constant:kWFPairingIconTilePadding].active = YES;
+    [imageView.bottomAnchor constraintEqualToAnchor:container.bottomAnchor constant:-kWFPairingIconTilePadding].active = YES;
 
     return container;
 }
@@ -555,7 +558,8 @@ static BOOL WFPairingApplyDeviceSupportRange(BOOL enabled, NSDictionary<NSString
 
     UIView *container = [[UIView alloc] initWithFrame:CGRectZero];
     container.backgroundColor = [tintColor colorWithAlphaComponent:0.14];
-    container.layer.cornerRadius = 999;
+    container.layer.cornerRadius = WFUIPillCornerRadius;
+    container.layer.cornerCurve = kCACornerCurveContinuous;
     [container addSubview:stack];
 
     [NSLayoutConstraint activateConstraints:@[
@@ -875,12 +879,20 @@ static BOOL WFPairingApplyDeviceSupportRange(BOOL enabled, NSDictionary<NSString
     textField.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     textField.textColor = UIColor.labelColor;
     textField.borderStyle = UITextBorderStyleNone;
+    textField.backgroundColor = UIColor.tertiarySystemGroupedBackgroundColor;
+    textField.layer.cornerRadius = WFUIControlCornerRadius;
+    textField.layer.cornerCurve = kCACornerCurveContinuous;
+    textField.leftView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 12, 1)];
+    textField.leftViewMode = UITextFieldViewModeAlways;
+    textField.rightView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 12, 1)];
+    textField.rightViewMode = UITextFieldViewModeAlways;
     textField.accessibilityIdentifier = key;
     textField.enabled = !self.isWorking;
     textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
     textField.autocorrectionType = UITextAutocorrectionTypeNo;
     textField.spellCheckingType = UITextSpellCheckingTypeNo;
     [textField addTarget:self action:@selector(textFieldChanged:) forControlEvents:UIControlEventEditingChanged];
+    [textField.heightAnchor constraintGreaterThanOrEqualToConstant:42].active = YES;
     return [self makeCardWithArrangedSubviews:@[titleLabel, textField] spacing:8];
 }
 
@@ -922,9 +934,7 @@ static BOOL WFPairingApplyDeviceSupportRange(BOOL enabled, NSDictionary<NSString
 - (UIView *)makeCardHeaderWithTitle:(NSString *)title
                         systemImage:(NSString *)systemImage
                           tintColor:(UIColor *)tintColor {
-    UIImageView *iconView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:systemImage ?: @"info.circle"]];
-    iconView.tintColor = tintColor ?: UIColor.systemBlueColor;
-    iconView.preferredSymbolConfiguration = [UIImageSymbolConfiguration configurationWithPointSize:18 weight:UIImageSymbolWeightSemibold];
+    UIView *iconView = WFPairingMakeSymbolTile(systemImage ?: @"info.circle", tintColor ?: UIColor.systemBlueColor);
     [iconView setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
 
     UILabel *titleLabel = [self makeLabelWithText:title
@@ -997,8 +1007,10 @@ static BOOL WFPairingApplyDeviceSupportRange(BOOL enabled, NSDictionary<NSString
 
     UIView *container = [[UIView alloc] initWithFrame:CGRectZero];
     container.backgroundColor = UIColor.secondarySystemGroupedBackgroundColor;
-    container.layer.cornerRadius = 16;
+    container.layer.cornerRadius = WFUICardCornerRadius;
     container.layer.cornerCurve = kCACornerCurveContinuous;
+    container.layer.borderWidth = 1 / UIScreen.mainScreen.scale;
+    container.layer.borderColor = [UIColor.separatorColor colorWithAlphaComponent:0.08].CGColor;
     [container addSubview:stack];
 
     [NSLayoutConstraint activateConstraints:@[

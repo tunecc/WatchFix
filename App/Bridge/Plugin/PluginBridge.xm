@@ -2,6 +2,7 @@
 #import "../Internal/BridgeInternal.h"
 #import "Logging.h"
 #import "PluginConfig.h"
+#import "WFRoundedCorners.h"
 
 #import <UIKit/UIKit.h>
 
@@ -1591,7 +1592,7 @@ static BOOL RestartWatchServices(NSError **error) {
 
         UIView *banner = [[UIView alloc] initWithFrame:CGRectZero];
         banner.backgroundColor = [[UIColor systemRedColor] colorWithAlphaComponent:0.92];
-        banner.layer.cornerRadius = 14;
+        banner.layer.cornerRadius = WFUIControlCornerRadius;
         banner.layer.cornerCurve = kCACornerCurveContinuous;
         banner.layer.shadowColor = UIColor.blackColor.CGColor;
         banner.layer.shadowOpacity = 0.18;

@@ -1,7 +1,15 @@
 import UIKit
 
-private let WFCardCornerRadius: CGFloat = 14
+let WFCardCornerRadius: CGFloat = 22
+let WFIconTileCornerRadius: CGFloat = 16
+let WFControlCornerRadius: CGFloat = 14
+let WFPillCornerRadius: CGFloat = 999
+let WFBadgeCornerRadius: CGFloat = 11
+let WFHairlineCornerRadius: CGFloat = 1.5
+
 private let WFCardPadding: CGFloat = 14
+private let WFIconTileSize: CGFloat = 40
+private let WFIconTilePadding: CGFloat = 5
 private let WFPluginCardButtonWidth: CGFloat = 108
 
 struct WFCardReferenceItem {
@@ -203,7 +211,7 @@ func WFMakeActionButton(
 ) -> UIButton {
     var configuration = isPrimary ? UIButton.Configuration.filled() : UIButton.Configuration.gray()
     configuration.title = title
-    configuration.cornerStyle = .medium
+    configuration.cornerStyle = .large
     configuration.buttonSize = buttonSize
     configuration.imagePadding = 8
     configuration.showsActivityIndicator = isLoading
@@ -241,7 +249,8 @@ func WFMakeStatusBadge(state: WatchCompatibilityState, title: String? = nil) -> 
 
     let container = UIView()
     container.backgroundColor = state.tintColor.withAlphaComponent(0.14)
-    container.layer.cornerRadius = 999
+    container.layer.cornerRadius = WFPillCornerRadius
+    container.layer.cornerCurve = .continuous
     container.addSubview(stack)
     container.setContentHuggingPriority(.required, for: .horizontal)
     container.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
@@ -281,7 +290,7 @@ func WFMakeValueRow(title: String, value: String) -> UIView {
 }
 
 func WFMakeIconTile(image: UIImage?, symbolName: String, tintColor: UIColor) -> UIView {
-    let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
+    let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 19, weight: .semibold)
     let resolvedImage = image
         ?? UIImage(systemName: symbolName, withConfiguration: symbolConfiguration)
         ?? UIImage(systemName: "puzzlepiece.extension", withConfiguration: symbolConfiguration)
@@ -292,22 +301,32 @@ func WFMakeIconTile(image: UIImage?, symbolName: String, tintColor: UIColor) -> 
 
     let container = UIView()
     container.backgroundColor = image == nil ? tintColor.withAlphaComponent(0.14) : .secondarySystemGroupedBackground
-    container.layer.cornerRadius = 10
+    container.layer.cornerRadius = WFIconTileCornerRadius
     container.layer.cornerCurve = .continuous
     container.clipsToBounds = true
     container.translatesAutoresizingMaskIntoConstraints = false
     container.addSubview(imageView)
 
     NSLayoutConstraint.activate([
-        container.widthAnchor.constraint(equalToConstant: 36),
-        container.heightAnchor.constraint(equalToConstant: 36),
-        imageView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 4),
-        imageView.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -4),
-        imageView.topAnchor.constraint(equalTo: container.topAnchor, constant: 4),
-        imageView.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -4),
+        container.widthAnchor.constraint(equalToConstant: WFIconTileSize),
+        container.heightAnchor.constraint(equalToConstant: WFIconTileSize),
+        imageView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: WFIconTilePadding),
+        imageView.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -WFIconTilePadding),
+        imageView.topAnchor.constraint(equalTo: container.topAnchor, constant: WFIconTilePadding),
+        imageView.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -WFIconTilePadding),
     ])
 
     return container
+}
+
+func WFMakeIconTileImage(symbolName: String, tintColor: UIColor) -> UIImage? {
+    let tile = WFMakeIconTile(image: nil, symbolName: symbolName, tintColor: tintColor)
+    tile.bounds = CGRect(origin: .zero, size: CGSize(width: WFIconTileSize, height: WFIconTileSize))
+    tile.layoutIfNeeded()
+    let renderer = UIGraphicsImageRenderer(size: CGSize(width: WFIconTileSize, height: WFIconTileSize))
+    return renderer.image { context in
+        tile.layer.render(in: context.cgContext)
+    }.withRenderingMode(.alwaysOriginal)
 }
 
 private func makeCardHeader(title: String, symbolName: String, tintColor: UIColor) -> UIView {
@@ -332,7 +351,7 @@ private func makeIndexedBulletRow(_ text: String, index: Int, tintColor: UIColor
 
     let badgeContainer = UIView()
     badgeContainer.backgroundColor = tintColor.withAlphaComponent(0.14)
-    badgeContainer.layer.cornerRadius = 11
+    badgeContainer.layer.cornerRadius = WFBadgeCornerRadius
     badgeContainer.layer.cornerCurve = .continuous
     badgeContainer.translatesAutoresizingMaskIntoConstraints = false
     badgeContainer.addSubview(badgeLabel)
@@ -359,7 +378,7 @@ private func makeIndexedBulletRow(_ text: String, index: Int, tintColor: UIColor
 private func makeReadableParagraphRow(_ text: String, tintColor: UIColor) -> UIView {
     let accentBar = UIView()
     accentBar.backgroundColor = tintColor.withAlphaComponent(0.35)
-    accentBar.layer.cornerRadius = 1.5
+    accentBar.layer.cornerRadius = WFHairlineCornerRadius
     accentBar.translatesAutoresizingMaskIntoConstraints = false
     accentBar.setContentHuggingPriority(.required, for: .horizontal)
     accentBar.setContentCompressionResistancePriority(.required, for: .horizontal)

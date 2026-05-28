@@ -1,4 +1,5 @@
 #import "ScannerBridge.h"
+#import "WFRoundedCorners.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <Foundation/Foundation.h>
@@ -223,7 +224,7 @@ static NSDictionary<NSString *, id> *WFNormalizedScanResult(id rawValue) {
     CGFloat vfHeight     = vfWidth / 0.865;
     CGFloat vfX          = (W - vfWidth) * 0.5;
     CGFloat vfY          = (H - vfHeight) * 0.5;
-    CGFloat cornerRadius = vfWidth * 0.20;
+    CGFloat cornerRadius = vfWidth * WFUIViewfinderCornerRadiusRatio;
     CGRect  viewfinderRect = CGRectMake(vfX, vfY, vfWidth, vfHeight);
 
     UIBezierPath *borderPath =
@@ -284,7 +285,7 @@ static NSDictionary<NSString *, id> *WFNormalizedScanResult(id rawValue) {
 
 - (void)commonInit {
     self.clipsToBounds = YES;
-    self.layer.cornerRadius = 18.0;
+    self.layer.cornerRadius = WFUICardCornerRadius;
     self.layer.cornerCurve = kCACornerCurveContinuous;
 }
 
