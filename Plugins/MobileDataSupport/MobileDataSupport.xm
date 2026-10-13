@@ -260,7 +260,8 @@ static BOOL WrappedValidateCellularPlanDevice(WatchFixValidateDeviceBlock origin
 
 %hookf(CFPropertyListRef, CFPropertyListCreateWithData, CFAllocatorRef allocator, CFDataRef data, CFOptionFlags options, CFPropertyListFormat *format, CFErrorRef *error)
 {
-    NSDictionary *origPlist = (NSDictionary *)CFBridgingRelease(%orig);
+    CFPropertyListRef originalPropertyList = %orig;
+    NSDictionary *origPlist = (NSDictionary *)CFBridgingRelease(originalPropertyList);
     if (![origPlist isKindOfClass:[NSDictionary class]]) {
         return (CFPropertyListRef)CFBridgingRetain(origPlist);
     }
