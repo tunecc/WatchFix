@@ -83,8 +83,8 @@ static BOOL WatchFixServiceDictionariesContainLockdownModeEntry(NSArray *service
 %end
 
 static void InitLockdownModeSupportHooks(void) {
-    if (IOSVersionAtLeast(17, 0, 0)) {
-        Log(@"host OS is iOS 17 or newer, skipping LockdownModeSupport hooks");
+    if (IOSVersionAtLeast(17, 4, 0)) {
+        Log(@"host OS is iOS 17.4 or newer, skipping LockdownModeSupport hooks");
         return;
     }
 

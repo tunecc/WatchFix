@@ -27,6 +27,7 @@ FOUNDATION_EXPORT NSString *WFLocalizedAppString(NSString *key, NSString * _Null
 + (BOOL)setPluginLoggingEnabled:(BOOL)enabled error:(NSError * _Nullable * _Nullable)error;
 + (BOOL)clearPluginLogs:(NSError * _Nullable * _Nullable)error;
 + (BOOL)restartWatchServices:(NSError * _Nullable * _Nullable)error;
++ (BOOL)restartExecutablesNamed:(NSArray<NSString *> *)processNames error:(NSError * _Nullable * _Nullable)error;
 + (nullable UIImage *)pluginIconForScopeIdentifier:(NSString *)scopeIdentifier;
 + (void)showWarningBannerWithMessage:(NSString *)message delay:(NSTimeInterval)delay;
 

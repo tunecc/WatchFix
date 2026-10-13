@@ -359,8 +359,8 @@ supportedIncomingMessageTypes:(uint64_t)supportedIncomingMessageTypes
         return;
     }
 
-    if (IOSVersionAtLeast(17, 0, 0)) {
-        Log(@"skip MobileDataSupport on iOS 17 or later");
+    if (IOSVersionAtLeast(17, 4, 0)) {
+        Log(@"skip MobileDataSupport on iOS 17.4 or later");
         return;
     }
 

@@ -703,8 +703,8 @@ incomingResourceAtURL:(NSURL *)incomingURL
         return;
     }
 
-    if (IOSVersionAtLeast(17, 0, 0)) {
-        Log(@"host major version >= 17, skipping PhotoLibrarySupport hooks");
+    if (IOSVersionAtLeast(17, 4, 0)) {
+        Log(@"host major version >= 17.4, skipping PhotoLibrarySupport hooks");
         return;
     }
 

@@ -508,8 +508,8 @@ static void WFNotifyDelegateAboutMovedNodes(id graph) {
 %end
 
 static BOOL WFInstallLayoutSupportHooks(void) {
-    if (IOSVersionAtLeast(17, 0, 0)) {
-        Log(@"LayoutSupport is not needed on iOS 17 or later");
+    if (IOSVersionAtLeast(17, 4, 0)) {
+        Log(@"LayoutSupport is not needed on iOS 17.4 or later");
         return NO;
     }
 

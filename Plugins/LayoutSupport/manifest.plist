@@ -18,7 +18,7 @@
 			<array/>
 		</dict>
         <key>WFPluginMaximumSystemVersion</key>
-        <integer>1114111</integer> <!-- 17.0.0 -->
+        <integer>1114881</integer> <!-- 17.3.1 -->
 		<key>WFPluginMinimumWatchOSVersion</key>
 		<integer>655360</integer> <!-- 10.0.0 -->
 		<key>WFPluginNanoCapabilities</key>

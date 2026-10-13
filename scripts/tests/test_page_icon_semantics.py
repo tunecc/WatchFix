@@ -54,7 +54,7 @@ class PageIconSemanticsTests(unittest.TestCase):
             )
             self.assertRegex(source, pattern, msg=f"missing menu icon style for {title_key}")
 
-        self.assertIn("content.imageProperties.tintColor = item.tintColor", source)
+        self.assertIn("content.image = WFMakeIconTileImage(symbolName: item.symbolName, tintColor: item.tintColor)", source)
 
     def test_about_header_and_sections_use_sf_symbols(self):
         source = ABOUT_VIEW_CONTROLLER_SWIFT.read_text()
